@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-sans selection:bg-teal-500 selection:text-white;
+    @apply bg-[#060B14] text-slate-100 antialiased font-sans selection:bg-cyan-500 selection:text-black;
   }
 }
 
@@ -14,29 +14,58 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #0B132B;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #1E293B;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #334155;
 }
 
-/* Pulse animation for active alerts */
-@keyframes urgent-pulse {
+/* Neon glow animations */
+@keyframes neon-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.4), inset 0 0 10px rgba(0, 242, 254, 0.2);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.7), inset 0 0 15px rgba(0, 242, 254, 0.4);
   }
 }
 
-.urgent-alert {
-  animation: urgent-pulse 2s infinite ease-in-out;
+.neon-glow {
+  animation: neon-pulse 3s infinite ease-in-out;
 }
+
+@keyframes call-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(244, 63, 94, 0);
+  }
+}
+
+.call-alert {
+  animation: call-pulse 2s infinite ease-in-out;
+}
+
+/* Sound wave animation for XiaoZhi voice assistant */
+@keyframes wave-bar {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 18px;
+  }
+}
+
+.wave-1 { animation: wave-bar 1.2s infinite ease-in-out 0.1s; }
+.wave-2 { animation: wave-bar 0.9s infinite ease-in-out 0.3s; }
+.wave-3 { animation: wave-bar 1.4s infinite ease-in-out 0.2s; }
+.wave-4 { animation: wave-bar 0.8s infinite ease-in-out 0.4s; }
+.wave-5 { animation: wave-bar 1.1s infinite ease-in-out 0.15s; }
 
 /* Print friendly receipt styling */
 @media print {
@@ -53,8 +82,8 @@
     width: 100%;
     margin: 0;
     padding: 16px;
-    background: white;
-    color: black;
+    background: white !important;
+    color: black !important;
     box-shadow: none !important;
     border: none !important;
   }

@@ -1,157 +1,113 @@
 import React, { useState, useEffect } from 'react';
 import { SocketProvider, useSocket } from './context/SocketContext';
 import { Header } from './components/Header';
-import { Sidebar, NavTab } from './components/Sidebar';
-import { DemoBar } from './components/DemoBar';
+import { RobotVoiceController } from './components/RobotVoiceController';
 import { NotificationToasts } from './components/NotificationToast';
 import { ReceiptModal } from './components/ReceiptModal';
 
-import { OverviewPage } from './pages/OverviewPage';
-import { LiveRequestsPage } from './pages/LiveRequestsPage';
-import { FoodOrdersPage } from './pages/FoodOrdersPage';
-import { TablesRobotsPage } from './pages/TablesRobotsPage';
+import { SingleRobotCommandPage } from './pages/SingleRobotCommandPage';
 import { BillingReceiptsPage } from './pages/BillingReceiptsPage';
-import { HistoryPage } from './pages/HistoryPage';
-import { SettingsIntegrationPage } from './pages/SettingsIntegrationPage';
+import { HardwareBridgePage } from './pages/HardwareBridgePage';
 
-import { api } from './services/api';
+import {
+  Radio,
+  Receipt,
+  Cpu,
+  Bot
+} from 'lucide-react';
 
 const MainApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<NavTab>('overview');
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'command' | 'billing' | 'gateway'>('command');
+  const [currentTable, setCurrentTable] = useState<string>('T04');
   const [activeBillModalId, setActiveBillModalId] = useState<string | null>(null);
-
-  // App metrics for sidebar badges
-  const [badgeCounts, setBadgeCounts] = useState({
-    newRequests: 0,
-    pendingOrders: 0,
-    openBills: 0,
-    connectedRobots: 0
-  });
-
-  const [restaurantName, setRestaurantName] = useState<string>('Spice Route & Robotics Cafe');
-  const [demoMode, setDemoMode] = useState<boolean>(true);
-
-  const { socket } = useSocket();
-
-  const refreshBadges = async () => {
-    try {
-      const overview = await api.getOverview();
-      setBadgeCounts({
-        newRequests: overview.stats.newRequestsCount,
-        pendingOrders: overview.stats.pendingOrdersCount,
-        openBills: overview.stats.openBillsCount,
-        connectedRobots: overview.stats.connectedRobotsCount
-      });
-      if (overview.meta.restaurant_name) {
-        setRestaurantName(overview.meta.restaurant_name);
-      }
-      setDemoMode(overview.meta.demo_mode);
-    } catch (err) {
-      console.warn('Could not refresh badge counts:', err);
-    }
-  };
-
-  useEffect(() => {
-    refreshBadges();
-  }, []);
-
-  useEffect(() => {
-    if (socket) {
-      socket.on('request.created', refreshBadges);
-      socket.on('request.updated', refreshBadges);
-      socket.on('order.created', refreshBadges);
-      socket.on('order.updated', refreshBadges);
-      socket.on('bill.created', refreshBadges);
-      socket.on('bill.updated', refreshBadges);
-      socket.on('robot.status', refreshBadges);
-      socket.on('robot.heartbeat', refreshBadges);
-      socket.on('system.reset', refreshBadges);
-
-      return () => {
-        socket.off('request.created', refreshBadges);
-        socket.off('request.updated', refreshBadges);
-        socket.off('order.created', refreshBadges);
-        socket.off('order.updated', refreshBadges);
-        socket.off('bill.created', refreshBadges);
-        socket.off('bill.updated', refreshBadges);
-        socket.off('robot.status', refreshBadges);
-        socket.off('robot.heartbeat', refreshBadges);
-        socket.off('system.reset', refreshBadges);
-      };
-    }
-  }, [socket]);
+  const [showSimulator, setShowSimulator] = useState<boolean>(true);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-teal-500 selection:text-white">
+    <div className="min-h-screen bg-[#060B14] text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-black">
       {/* Toast Alert Notifications */}
       <NotificationToasts />
 
-      {/* Top Header */}
+      {/* Futuristic Cyber Header */}
       <Header
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        restaurantName={restaurantName}
-        demoMode={demoMode}
-        onOpenDemoBar={() => setActiveTab('overview')}
+        robotLocation={currentTable}
+        isRobotOnline={true}
+        onOpenSimulator={() => setShowSimulator(true)}
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Persistent Left Sidebar */}
-        <Sidebar
-          activeTab={activeTab}
-          onSelectTab={(tab) => setActiveTab(tab)}
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          badgeCounts={badgeCounts}
-          demoMode={demoMode}
-        />
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+        {/* Customer Voice Simulator to XiaoZhi */}
+        {showSimulator && (
+          <RobotVoiceController
+            currentTable={currentTable}
+            onTableChange={(tableId) => setCurrentTable(tableId)}
+            onEventDispatched={() => {}}
+          />
+        )}
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Hackathon Judge Interactive Demo Toolbar */}
-            <DemoBar
-              onEventSimulated={refreshBadges}
-              onResetDatabase={refreshBadges}
-            />
+        {/* Tab Switcher Pills */}
+        <div className="flex items-center gap-2 border-b border-slate-800 pb-3 font-mono text-xs">
+          <button
+            onClick={() => setActiveTab('command')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition font-bold ${
+              activeTab === 'command'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'bg-[#0B132B] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Radio className="w-4 h-4" />
+            <span>ROBOT COMMAND CENTER</span>
+          </button>
 
-            {/* Active Section Router */}
-            {activeTab === 'overview' && (
-              <OverviewPage
-                onNavigate={(tab) => setActiveTab(tab)}
-                onOpenReceipt={(billId) => setActiveBillModalId(billId)}
-              />
-            )}
+          <button
+            onClick={() => setActiveTab('billing')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition font-bold ${
+              activeTab === 'billing'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'bg-[#0B132B] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Receipt className="w-4 h-4" />
+            <span>TABLE INVOICES & BILLS</span>
+          </button>
 
-            {activeTab === 'requests' && <LiveRequestsPage />}
+          <button
+            onClick={() => setActiveTab('gateway')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition font-bold ${
+              activeTab === 'gateway'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'bg-[#0B132B] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Cpu className="w-4 h-4" />
+            <span>ESP32 HARDWARE GATEWAY</span>
+          </button>
+        </div>
 
-            {activeTab === 'orders' && <FoodOrdersPage />}
+        {/* View Router */}
+        {activeTab === 'command' && (
+          <SingleRobotCommandPage
+            currentTable={currentTable}
+            onTableChange={(tableId) => setCurrentTable(tableId)}
+            onOpenReceipt={(billId) => setActiveBillModalId(billId)}
+            onViewBilling={() => setActiveTab('billing')}
+          />
+        )}
 
-            {activeTab === 'tables' && <TablesRobotsPage />}
+        {activeTab === 'billing' && (
+          <BillingReceiptsPage
+            onOpenReceipt={(billId) => setActiveBillModalId(billId)}
+          />
+        )}
 
-            {activeTab === 'billing' && (
-              <BillingReceiptsPage
-                onOpenReceipt={(billId) => setActiveBillModalId(billId)}
-              />
-            )}
+        {activeTab === 'gateway' && <HardwareBridgePage />}
+      </main>
 
-            {activeTab === 'history' && (
-              <HistoryPage
-                onOpenReceipt={(billId) => setActiveBillModalId(billId)}
-              />
-            )}
-
-            {activeTab === 'settings' && <SettingsIntegrationPage />}
-          </div>
-        </main>
-      </div>
-
-      {/* Global Receipt Inspection & Print Modal */}
+      {/* Receipt & Payment Settlement Modal */}
       <ReceiptModal
         billId={activeBillModalId}
         onClose={() => setActiveBillModalId(null)}
-        onBillUpdated={refreshBadges}
-        restaurantName={restaurantName}
+        restaurantName="DineAssist AI Restaurant"
       />
     </div>
   );

@@ -7,34 +7,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: {
-          50: '#f0f4f8',
-          100: '#d9e2ec',
-          200: '#bcccdc',
-          300: '#9fb3c8',
-          400: '#829ab1',
-          500: '#627d98',
-          600: '#486581',
-          700: '#334e68',
-          800: '#1E3E62',
-          900: '#0B192C',
-          950: '#060d17',
+        cyber: {
+          950: '#030712',
+          900: '#060B14',
+          800: '#0B132B',
+          700: '#111D3E',
+          600: '#1C2E5A',
         },
-        teal: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
+        neon: {
+          cyan: '#00F2FE',
+          teal: '#0D9488',
+          blue: '#38BDF8',
+          amber: '#F59E0B',
+          rose: '#F43F5E',
+          emerald: '#10B981',
+          violet: '#8B5CF6'
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
       }
     },
   },
