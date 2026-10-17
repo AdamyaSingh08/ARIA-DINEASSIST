@@ -30,10 +30,10 @@ export function seedDatabase(force = false) {
 
   // Settings
   const settings = [
-    ['restaurant_name', 'DineAssist AI Restaurant'],
+    ['restaurant_name', 'ARIA Dining Room'],
     ['tax_rate', '5.0'],
     ['currency_symbol', '₹'],
-    ['robot_api_key', 'xiaozhi_secret_key_innotech2026'],
+    ['robot_api_key', 'aria_secret_key_innotech2026'],
     ['active_robot_id', 'robot-01'],
     ['heartbeat_timeout_seconds', '90']
   ];
@@ -57,11 +57,11 @@ export function seedDatabase(force = false) {
     `).run(t.id, t.name, t.capacity, t.status, t.id === 'T04' ? 'robot-01' : null, isoNow, isoNow);
   }
 
-  // Single Robot: XiaoZhi Robot
+  // Single Robot: ARIA Robot
   db.prepare(`
     INSERT INTO robots (id, name, model, assigned_table_id, status, mode, battery_level, last_seen, last_event_type, last_error, firmware_version, created_at, updated_at)
-    VALUES (?, ?, ?, ?, 'online', 'physical', 94, ?, 'heartbeat', null, '1.4.2-xiaozhi-esp32', ?, ?)
-  `).run('robot-01', 'XiaoZhi Robot (ARIA)', 'XiaoZhi ESP32-S3 Voice Rover', 'T04', isoNow, isoNow, isoNow);
+    VALUES (?, ?, ?, ?, 'online', 'physical', 94, ?, 'heartbeat', null, '1.4.2-aria-esp32', ?, ?)
+  `).run('robot-01', 'ARIA Robot', 'ARIA Autonomous Table-Side Rover', 'T04', isoNow, isoNow, isoNow);
 
   // Authoritative Menu Catalog (for pricing when robot sends customer food orders)
   const menu = [

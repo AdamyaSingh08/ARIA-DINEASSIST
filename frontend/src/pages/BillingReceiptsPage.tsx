@@ -5,12 +5,14 @@ import { useSocket } from '../context/SocketContext';
 import {
   Receipt,
   Search,
-  Filter,
   CheckCircle2,
   Clock,
   XCircle,
   Eye,
-  Bot
+  Bot,
+  Filter,
+  RefreshCw,
+  Printer
 } from 'lucide-react';
 
 interface BillingReceiptsPageProps {
@@ -56,111 +58,161 @@ export const BillingReceiptsPage: React.FC<BillingReceiptsPageProps> = ({ onOpen
     }
   }, [socket, statusFilter, searchQuery]);
 
+  // Quick stats
+  const totalInvoiced = bills
+    .filter(b => b.status === 'Paid')
+    .reduce((sum, b) => sum + b.final_amount, 0);
+  const openCount = bills.filter(b => b.status === 'Open').length;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Title & Stats */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-borderLine">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight font-mono">
-            Table Billing & Invoices
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5 font-mono">
-            Automatically generated when customers request their bill via XiaoZhi Robot.
+          <h2 className="font-serif text-2xl font-normal text-charcoal tracking-tight">Billing & Receipts</h2>
+          <p className="text-xs text-muted mt-1 font-sans">
+            Invoices generated through ARIA table-side vocal checkout or cashier dispatch.
           </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="text-right hidden sm:block">
+            <span className="text-[10px] uppercase font-mono tracking-wider text-muted">Settled Today</span>
+            <p className="font-mono text-sm font-bold text-forest-900">₹{totalInvoiced.toFixed(2)}</p>
+          </div>
+          <button
+            onClick={() => loadBills()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-borderLine text-xs font-medium text-charcoal hover:bg-forest-50 transition-colors"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-muted ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="bg-[#0B132B]/90 p-4 rounded-2xl border border-cyan-500/25 shadow-lg flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[200px] relative">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+      {/* Filter Row */}
+      <div className="bg-white p-3.5 rounded-lg border border-borderLine shadow-2xs flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[220px] relative">
+          <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-2.5" />
           <input
             type="text"
-            placeholder="Search invoice number or table..."
+            placeholder="Search invoice #, table or amount..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs pl-9 pr-3 py-2 bg-black/50 border border-slate-800 rounded-xl text-white font-mono focus:outline-hidden focus:border-cyan-400"
+            className="w-full text-xs pl-8.5 pr-3 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal placeholder:text-muted/60 focus:outline-hidden focus:border-forest-700"
           />
         </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs px-3 py-2 bg-black/50 border border-slate-800 rounded-xl text-slate-300 font-mono"
-        >
-          <option value="all">All Invoices</option>
-          <option value="Open">Open (Pending)</option>
-          <option value="Paid">Paid (Settled)</option>
-          <option value="Cancelled">Cancelled</option>
-        </select>
+        <div className="flex items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-muted" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="text-xs px-3 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal focus:outline-hidden focus:border-forest-700"
+          >
+            <option value="all">All Invoices ({bills.length})</option>
+            <option value="Open">Open ({openCount})</option>
+            <option value="Paid">Paid / Settled</option>
+            <option value="Cancelled">Cancelled / Void</option>
+          </select>
+        </div>
       </div>
 
-      {/* Bills Table */}
-      <div className="bg-[#0B132B]/90 rounded-2xl border border-cyan-500/25 shadow-lg overflow-hidden">
+      {/* Invoices Ledger Table */}
+      <div className="bg-white rounded-lg border border-borderLine shadow-2xs overflow-hidden">
         {loading && bills.length === 0 ? (
-          <div className="py-20 text-center text-slate-500 text-xs font-mono">Loading invoices...</div>
+          <div className="py-20 text-center text-muted text-xs font-mono">Loading invoices...</div>
         ) : bills.length === 0 ? (
           <div className="py-20 text-center p-8">
-            <Receipt className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-            <h3 className="font-bold text-slate-300 text-sm font-mono">No Invoices Generated Yet</h3>
-            <p className="text-xs text-slate-500 mt-1 font-mono">
-              Invoices will automatically generate when the customer asks XiaoZhi: "Please bring the bill".
+            <div className="w-10 h-10 rounded-full bg-forest-50 text-forest-700 mx-auto mb-2 flex items-center justify-center">
+              <Receipt className="w-5 h-5" />
+            </div>
+            <h3 className="font-serif text-base font-normal text-charcoal">No Invoices Found</h3>
+            <p className="text-xs text-muted mt-1 max-w-sm mx-auto">
+              Invoices are automatically created when guests ask ARIA at their table: "Please bring the bill", or when kitchen orders are finalized.
             </p>
           </div>
         ) : (
-          <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-black/40 border-b border-slate-800 text-slate-400">
-              <tr>
-                <th className="py-3 px-4">INVOICE #</th>
-                <th className="py-3 px-4">TABLE</th>
-                <th className="py-3 px-4">ITEMS</th>
-                <th className="py-3 px-4 text-right">SUBTOTAL</th>
-                <th className="py-3 px-4 text-right">GST (5%)</th>
-                <th className="py-3 px-4 text-right">FINAL AMOUNT</th>
-                <th className="py-3 px-4">STATUS</th>
-                <th className="py-3 px-4 text-right">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/80">
-              {bills.map((b) => (
-                <tr key={b.id} className="hover:bg-slate-900/40">
-                  <td className="py-3.5 px-4 font-bold text-white">{b.invoice_number}</td>
-                  <td className="py-3.5 px-4 font-bold text-amber-300">{b.table_id}</td>
-                  <td className="py-3.5 px-4 text-slate-400">{b.item_count || 0} item(s)</td>
-                  <td className="py-3.5 px-4 text-right text-slate-300">₹{b.subtotal.toFixed(2)}</td>
-                  <td className="py-3.5 px-4 text-right text-slate-400">₹{b.tax_amount.toFixed(2)}</td>
-                  <td className="py-3.5 px-4 text-right">
-                    <span className="font-bold text-cyan-300 text-sm">
-                      ₹{b.final_amount.toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      b.status === 'Paid'
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                        : b.status === 'Cancelled'
-                        ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                        : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                    }`}>
-                      {b.status === 'Paid' && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
-                      {b.status === 'Open' && <Clock className="w-3 h-3 text-amber-400" />}
-                      {b.status === 'Cancelled' && <XCircle className="w-3 h-3 text-rose-400" />}
-                      <span>{b.status.toUpperCase()}</span>
-                      {b.payment_method && <span className="ml-1 text-[9px]">({b.payment_method})</span>}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <button
-                      onClick={() => onOpenReceipt(b.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Print / Pay</span>
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-forest-50/70 border-b border-borderLine text-muted font-mono uppercase text-[10px] tracking-wider">
+                <tr>
+                  <th className="py-2.5 px-4 font-medium">Invoice #</th>
+                  <th className="py-2.5 px-4 font-medium">Table</th>
+                  <th className="py-2.5 px-4 font-medium">Timestamp</th>
+                  <th className="py-2.5 px-4 font-medium">Items</th>
+                  <th className="py-2.5 px-4 text-right font-medium">Subtotal</th>
+                  <th className="py-2.5 px-4 text-right font-medium">GST (5%)</th>
+                  <th className="py-2.5 px-4 text-right font-medium">Payable</th>
+                  <th className="py-2.5 px-4 font-medium">Status</th>
+                  <th className="py-2.5 px-4 text-right font-medium">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-borderLine font-sans">
+                {bills.map((b) => (
+                  <tr key={b.id} className="hover:bg-forest-50/40 transition-colors">
+                    <td className="py-3 px-4 font-mono font-medium text-charcoal">
+                      {b.invoice_number}
+                    </td>
+
+                    <td className="py-3 px-4">
+                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-forest-50 border border-borderLine text-forest-900 font-medium">
+                        {b.table_id}
+                      </span>
+                    </td>
+
+                    <td className="py-3 px-4 text-muted font-mono text-[11px]">
+                      {new Date(b.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+
+                    <td className="py-3 px-4 text-muted">
+                      {b.item_count || 0} item{b.item_count !== 1 ? 's' : ''}
+                    </td>
+
+                    <td className="py-3 px-4 text-right font-mono text-muted">
+                      ₹{b.subtotal.toFixed(2)}
+                    </td>
+
+                    <td className="py-3 px-4 text-right font-mono text-muted">
+                      ₹{b.tax_amount.toFixed(2)}
+                    </td>
+
+                    <td className="py-3 px-4 text-right">
+                      <span className="font-mono font-bold text-forest-900 text-sm">
+                        ₹{b.final_amount.toFixed(2)}
+                      </span>
+                    </td>
+
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                        b.status === 'Paid'
+                          ? 'bg-sage-100 text-forest-900 border border-sage-200'
+                          : b.status === 'Cancelled'
+                          ? 'bg-terracotta/10 text-terracotta border border-terracotta/20'
+                          : 'bg-amber-50 text-amber-900 border border-amber-200'
+                      }`}>
+                        {b.status === 'Paid' && <CheckCircle2 className="w-3 h-3 text-forest-700" />}
+                        {b.status === 'Open' && <Clock className="w-3 h-3 text-amber-600" />}
+                        {b.status === 'Cancelled' && <XCircle className="w-3 h-3 text-terracotta" />}
+                        <span>{b.status.toUpperCase()}</span>
+                        {b.payment_method && <span className="opacity-75">· {b.payment_method}</span>}
+                      </span>
+                    </td>
+
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => onOpenReceipt(b.id)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-borderLine text-xs font-medium text-forest-900 hover:bg-forest-50 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-forest-700" />
+                        <span>Inspect & Pay</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

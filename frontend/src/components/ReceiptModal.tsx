@@ -3,7 +3,7 @@ import { Bill, MenuItem } from '../types';
 import { api } from '../services/api';
 import {
   Printer,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   Plus,
   Trash2,
@@ -26,7 +26,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   billId,
   onClose,
   onBillUpdated,
-  restaurantName = 'Spice Route & Robotics Cafe'
+  restaurantName = 'ARIA Dining Room'
 }) => {
   const [bill, setBill] = useState<Bill | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -63,7 +63,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   useEffect(() => {
     if (billId) {
       fetchBill(billId);
-      // Load menu items for adding items
       api.getMenu().then(items => {
         setMenuItems(items);
         if (items.length > 0) setSelectedMenuItem(items[0].id);
@@ -94,7 +93,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 
   const handleRemoveItem = async (itemId: string) => {
     if (!bill) return;
-    if (!window.confirm('Remove this item from the invoice?')) return;
+    if (!window.confirm('Remove this line item from the invoice?')) return;
     try {
       const updated = await api.removeItemFromBill(bill.id, itemId);
       setBill(updated);
@@ -120,8 +119,8 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 
   const handleCancelBill = async () => {
     if (!bill) return;
-    const reason = cancelReason.trim() || 'Staff voided';
-    if (!window.confirm(`Are you sure you want to cancel Invoice #${bill.invoice_number}?`)) return;
+    const reason = cancelReason.trim() || 'Voided by cashier';
+    if (!window.confirm(`Cancel invoice ${bill.invoice_number}?`)) return;
     try {
       setIsCancelling(true);
       const cancelled = await api.cancelBill(bill.id, reason);
@@ -135,20 +134,22 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-navy-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
-        {/* Modal Top Bar */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 no-print">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-charcoal/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-borderLine">
+        {/* Top Header */}
+        <div className="px-5 py-3.5 border-b border-borderLine flex items-center justify-between bg-forest-50/50 no-print">
           <div className="flex items-center gap-2">
-            <ReceiptIcon className="w-5 h-5 text-teal-600" />
-            <h2 className="font-bold text-slate-900 text-base">
-              Receipt & Invoice Details
+            <ReceiptIcon className="w-4 h-4 text-forest-700" />
+            <h2 className="font-serif text-base font-normal text-charcoal">
+              Guest Invoice & Settlement
             </h2>
             {bill && (
-              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                bill.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
-                bill.status === 'Cancelled' ? 'bg-rose-100 text-rose-800' :
-                'bg-amber-100 text-amber-800'
+              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                bill.status === 'Paid'
+                  ? 'bg-sage-100 text-forest-900 border border-sage-200'
+                  : bill.status === 'Cancelled'
+                  ? 'bg-terracotta/10 text-terracotta border border-terracotta/20'
+                  : 'bg-amber-50 text-amber-900 border border-amber-200'
               }`}>
                 {bill.status.toUpperCase()}
               </span>
@@ -158,97 +159,92 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 shadow-2xs transition"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-borderLine text-xs font-medium text-charcoal hover:bg-forest-50 transition-colors"
             >
-              <Printer className="w-4 h-4 text-slate-500" />
-              <span>Print Receipt</span>
+              <Printer className="w-3.5 h-3.5 text-muted" />
+              <span>Print</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition"
+              className="p-1 rounded text-muted hover:text-charcoal hover:bg-forest-50 transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Modal Content / Printable Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Modal Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {loading ? (
-            <div className="py-16 text-center text-slate-400">Loading invoice details...</div>
+            <div className="py-16 text-center text-muted font-mono text-xs">Loading invoice...</div>
           ) : error || !bill ? (
-            <div className="py-16 text-center text-rose-600 font-medium">{error || 'Bill not found'}</div>
+            <div className="py-16 text-center text-terracotta font-sans text-xs">{error || 'Invoice record not found'}</div>
           ) : (
             <div>
-              {/* Receipt Body */}
-              <div id="printable-receipt" className="border border-slate-200 rounded-xl p-6 bg-white shadow-2xs font-mono text-xs">
-                {/* Receipt Header */}
-                <div className="text-center pb-4 border-b border-dashed border-slate-300">
-                  <h3 className="text-base font-bold text-slate-900 uppercase tracking-wider font-sans">
+              {/* Thermal Receipt Style Box */}
+              <div id="printable-receipt" className="border border-borderLine rounded-md p-5 bg-ivory/60 font-mono text-xs text-charcoal space-y-3">
+                {/* Brand Header */}
+                <div className="text-center pb-3 border-b border-dashed border-borderLine">
+                  <h3 className="font-serif text-lg font-normal text-charcoal tracking-wide">
                     {restaurantName}
                   </h3>
-                  <p className="text-[11px] text-slate-500 font-sans mt-0.5">
-                    Powered by DineAssist · XiaoZhi Smart Robot System
+                  <p className="text-[11px] text-muted font-sans mt-0.5">
+                    ARIA Autonomous Dining Service · Table-side Station
                   </p>
-                  <p className="text-[11px] text-slate-400 font-sans">
-                    GSTIN: 07AAAAA0000A1Z5 (Demo Default)
+                  <p className="text-[10px] text-muted font-mono mt-0.5">
+                    GSTIN: 07ARIA9876K1Z9 · INNOTECH 2026
                   </p>
                 </div>
 
                 {/* Metadata Row */}
-                <div className="py-3 border-b border-dashed border-slate-300 grid grid-cols-2 gap-2 text-slate-600">
+                <div className="grid grid-cols-2 gap-2 text-[11px] pb-3 border-b border-dashed border-borderLine text-muted">
                   <div>
-                    <span className="text-slate-400">Invoice: </span>
-                    <strong className="text-slate-900 font-bold">{bill.invoice_number}</strong>
+                    <span>Invoice: </span>
+                    <strong className="text-charcoal">{bill.invoice_number}</strong>
                   </div>
                   <div className="text-right">
-                    <span className="text-slate-400">Table: </span>
-                    <strong className="text-slate-900 font-bold">{bill.table_id}</strong>
+                    <span>Station: </span>
+                    <strong className="text-charcoal">{bill.table_id}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400">Date: </span>
+                    <span>Date: </span>
                     <span>{new Date(bill.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-slate-400">Status: </span>
-                    <strong className={bill.status === 'Paid' ? 'text-emerald-700' : 'text-amber-700'}>
+                    <span>Status: </span>
+                    <strong className={bill.status === 'Paid' ? 'text-forest-800' : 'text-amber-800'}>
                       {bill.status}
                     </strong>
                   </div>
-                  {bill.order_ids && bill.order_ids.length > 0 && (
-                    <div className="col-span-2 text-[10px] text-slate-500">
-                      <span>Orders Linked: </span>{bill.order_ids.join(', ')}
-                    </div>
-                  )}
                 </div>
 
-                {/* Items Table */}
-                <div className="py-3 border-b border-dashed border-slate-300">
+                {/* Line Items Table */}
+                <div className="pb-3 border-b border-dashed border-borderLine">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="text-slate-400 text-[11px] border-b border-slate-200 pb-1">
-                        <th className="py-1">ITEM</th>
-                        <th className="text-center py-1">QTY</th>
-                        <th className="text-right py-1">RATE</th>
-                        <th className="text-right py-1">AMOUNT</th>
-                        <th className="text-center py-1 no-print">ACT</th>
+                      <tr className="text-muted text-[10px] uppercase font-mono tracking-wider border-b border-borderLine pb-1">
+                        <th className="py-1 font-medium">Item</th>
+                        <th className="text-center py-1 font-medium">Qty</th>
+                        <th className="text-right py-1 font-medium">Rate</th>
+                        <th className="text-right py-1 font-medium">Amount</th>
+                        <th className="text-center py-1 no-print"></th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-borderLine/50 font-sans">
                       {bill.items && bill.items.map((it) => (
-                        <tr key={it.id} className="text-slate-800">
-                          <td className="py-1.5 font-sans font-medium text-[11px]">{it.item_name}</td>
-                          <td className="text-center py-1.5">{it.quantity}</td>
-                          <td className="text-right py-1.5">₹{it.unit_price.toFixed(2)}</td>
-                          <td className="text-right py-1.5 font-semibold">₹{it.line_total.toFixed(2)}</td>
+                        <tr key={it.id} className="text-charcoal text-xs">
+                          <td className="py-1.5 font-medium">{it.item_name}</td>
+                          <td className="text-center py-1.5 font-mono">{it.quantity}</td>
+                          <td className="text-right py-1.5 font-mono text-muted">₹{it.unit_price.toFixed(2)}</td>
+                          <td className="text-right py-1.5 font-mono font-medium">₹{it.line_total.toFixed(2)}</td>
                           <td className="text-center py-1.5 no-print">
                             {bill.status !== 'Paid' && bill.status !== 'Cancelled' && (
                               <button
                                 onClick={() => handleRemoveItem(it.id)}
-                                className="text-slate-400 hover:text-rose-600 transition"
+                                className="text-muted hover:text-terracotta transition-colors ml-2"
                                 title="Remove item"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-3 h-3" />
                               </button>
                             )}
                           </td>
@@ -258,138 +254,138 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                   </table>
                 </div>
 
-                {/* Subtotals & Taxes */}
-                <div className="py-3 border-b border-dashed border-slate-300 space-y-1 text-slate-700">
-                  <div className="flex justify-between">
+                {/* Subtotal & Taxes */}
+                <div className="space-y-1.5 text-xs pb-3 border-b border-dashed border-borderLine">
+                  <div className="flex justify-between text-muted">
                     <span>Subtotal:</span>
-                    <span>₹{bill.subtotal.toFixed(2)}</span>
+                    <span className="font-mono">₹{bill.subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>GST / Tax ({bill.tax_rate}%):</span>
-                    <span>₹{bill.tax_amount.toFixed(2)}</span>
+                  <div className="flex justify-between text-muted">
+                    <span>GST (5% SGST/CGST):</span>
+                    <span className="font-mono">₹{bill.tax_amount.toFixed(2)}</span>
                   </div>
                   {bill.discount_amount > 0 && (
-                    <div className="flex justify-between text-emerald-600">
+                    <div className="flex justify-between text-forest-800">
                       <span>Discount ({bill.discount_rate}%):</span>
-                      <span>-₹{bill.discount_amount.toFixed(2)}</span>
+                      <span className="font-mono">-₹{bill.discount_amount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm font-bold text-slate-900 pt-2 border-t border-slate-200 font-sans">
-                    <span>FINAL PAYABLE:</span>
-                    <span className="text-teal-700">₹{bill.final_amount.toFixed(2)}</span>
+                  <div className="flex justify-between text-sm font-bold text-charcoal pt-2 border-t border-borderLine">
+                    <span className="font-serif">Total Payable:</span>
+                    <span className="font-mono text-forest-900 text-base">₹{bill.final_amount.toFixed(2)}</span>
                   </div>
                 </div>
 
-                {/* Payment Record */}
-                <div className="pt-3 text-[11px] text-slate-500 font-sans">
+                {/* Payment Badge Footer */}
+                <div className="pt-1 text-[11px] font-sans">
                   {bill.status === 'Paid' ? (
-                    <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between">
+                    <div className="p-2.5 rounded bg-sage-100 border border-sage-200 text-forest-900 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        <CheckCircle2 className="w-4 h-4 text-forest-800 shrink-0" />
                         <div>
-                          <strong>PAID via {bill.payment_method}</strong>
-                          <div className="text-[10px] text-emerald-700">Ref: {bill.payment_reference || 'N/A'}</div>
+                          <strong>Settled via {bill.payment_method}</strong>
+                          <div className="text-[10px] text-muted font-mono">Ref: {bill.payment_reference || 'Counter Direct'}</div>
                         </div>
                       </div>
-                      <div className="text-right text-[10px]">
-                        {bill.paid_at && new Date(bill.paid_at).toLocaleString([], { timeStyle: 'short', dateStyle: 'short' })}
+                      <div className="text-right text-[10px] font-mono text-muted">
+                        {bill.paid_at && new Date(bill.paid_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
                   ) : bill.status === 'Cancelled' ? (
-                    <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-rose-600" />
-                      <span>{bill.notes || 'Invoice cancelled by staff.'}</span>
+                    <div className="p-2.5 rounded bg-terracotta/10 border border-terracotta/20 text-terracotta flex items-center gap-2">
+                      <XCircle className="w-4 h-4 shrink-0" />
+                      <span>{bill.notes || 'Voided by restaurant cashier.'}</span>
                     </div>
                   ) : (
-                    <div className="text-center text-slate-400 py-1">
-                      *** Please proceed to staff counter for settlement ***
+                    <div className="text-center text-muted py-1 text-[10px] font-mono">
+                      Please settle with cashier or scan ARIA table terminal
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Add Item Row (Staff Edit before Finalization) */}
+              {/* Add Item to Bill (Cashier Adjustment) */}
               {bill.status !== 'Paid' && bill.status !== 'Cancelled' && (
-                <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 no-print">
-                  <h4 className="text-xs font-bold text-slate-800 mb-2 flex items-center gap-1.5">
-                    <Plus className="w-3.5 h-3.5 text-teal-600" />
-                    <span>Add Item to Bill (Authoritative Menu Prices)</span>
-                  </h4>
+                <div className="mt-4 p-3.5 rounded-lg border border-borderLine bg-white no-print space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-charcoal">
+                    <Plus className="w-3.5 h-3.5 text-forest-700" />
+                    <span>Add Item to Bill (Catalog Prices)</span>
+                  </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <select
                       value={selectedMenuItem}
                       onChange={(e) => setSelectedMenuItem(e.target.value)}
-                      className="flex-1 min-w-[200px] text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-1 focus:ring-teal-500 focus:outline-hidden"
+                      className="flex-1 min-w-[180px] text-xs px-2.5 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal focus:outline-hidden focus:border-forest-700"
                     >
                       {menuItems.map((item) => (
                         <option key={item.id} value={item.id}>
-                          {item.name} — ₹{item.price} ({item.category})
+                          {item.name} — ₹{item.price}
                         </option>
                       ))}
                     </select>
 
-                    <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2 py-1">
-                      <span className="text-[11px] text-slate-500">Qty:</span>
+                    <div className="flex items-center gap-1 bg-ivory border border-borderLine rounded-md px-2 py-1">
+                      <span className="text-[10px] text-muted font-mono">Qty:</span>
                       <input
                         type="number"
                         min="1"
                         max="20"
                         value={itemQuantity}
                         onChange={(e) => setItemQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-12 text-xs font-semibold text-center focus:outline-hidden"
+                        className="w-10 text-xs font-mono font-bold text-center bg-transparent focus:outline-hidden"
                       />
                     </div>
 
                     <button
                       disabled={isAddingItem}
                       onClick={handleAddItem}
-                      className="px-3 py-2 bg-teal-600 text-white rounded-lg text-xs font-semibold hover:bg-teal-700 transition disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-md text-xs font-semibold bg-forest-800 text-white hover:bg-forest-900 transition-colors disabled:opacity-50"
                     >
-                      {isAddingItem ? 'Adding...' : 'Add to Bill'}
+                      {isAddingItem ? 'Adding...' : 'Add'}
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Payment Recording Panel */}
+              {/* Payment Settlement Recording */}
               {bill.status !== 'Paid' && bill.status !== 'Cancelled' && (
-                <div className="mt-4 p-4 rounded-xl bg-teal-50/60 border border-teal-200 no-print">
-                  <h4 className="text-xs font-bold text-teal-900 mb-2">Record Settlement / Payment</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+                <div className="mt-4 p-3.5 rounded-lg border border-borderLine bg-sage-50/50 no-print space-y-3">
+                  <h4 className="text-xs font-semibold text-forest-900">Record Settlement</h4>
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('UPI')}
-                      className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                      className={`p-2 rounded border text-xs font-medium flex items-center justify-center gap-1.5 transition-colors ${
                         paymentMethod === 'UPI'
-                          ? 'bg-teal-600 text-white border-teal-600 shadow-2xs'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          ? 'bg-forest-800 text-white border-forest-800'
+                          : 'bg-white text-charcoal border-borderLine hover:bg-forest-50'
                       }`}
                     >
-                      <QrCode className="w-4 h-4" />
+                      <QrCode className="w-3.5 h-3.5" />
                       <span>UPI / QR</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('Cash')}
-                      className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                      className={`p-2 rounded border text-xs font-medium flex items-center justify-center gap-1.5 transition-colors ${
                         paymentMethod === 'Cash'
-                          ? 'bg-teal-600 text-white border-teal-600 shadow-2xs'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          ? 'bg-forest-800 text-white border-forest-800'
+                          : 'bg-white text-charcoal border-borderLine hover:bg-forest-50'
                       }`}
                     >
-                      <Banknote className="w-4 h-4" />
+                      <Banknote className="w-3.5 h-3.5" />
                       <span>Cash</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('Card')}
-                      className={`p-2.5 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                      className={`p-2 rounded border text-xs font-medium flex items-center justify-center gap-1.5 transition-colors ${
                         paymentMethod === 'Card'
-                          ? 'bg-teal-600 text-white border-teal-600 shadow-2xs'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          ? 'bg-forest-800 text-white border-forest-800'
+                          : 'bg-white text-charcoal border-borderLine hover:bg-forest-50'
                       }`}
                     >
-                      <CreditCard className="w-4 h-4" />
+                      <CreditCard className="w-3.5 h-3.5" />
                       <span>Card / POS</span>
                     </button>
                   </div>
@@ -397,17 +393,17 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Optional reference / txn ID (e.g. UPI/20261016/123)"
+                      placeholder="Transaction reference ID (e.g. UPI-2026-981)..."
                       value={paymentReference}
                       onChange={(e) => setPaymentReference(e.target.value)}
-                      className="flex-1 text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-1 focus:ring-teal-500 focus:outline-hidden"
+                      className="flex-1 text-xs px-2.5 py-1.5 bg-white border border-borderLine rounded-md font-mono text-charcoal focus:outline-hidden focus:border-forest-700"
                     />
                     <button
                       disabled={isProcessingPayment}
                       onClick={handlePayBill}
-                      className="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 transition shadow-2xs disabled:opacity-50"
+                      className="px-4 py-1.5 rounded-md text-xs font-semibold bg-forest-800 text-white hover:bg-forest-900 transition-colors shadow-xs disabled:opacity-50"
                     >
-                      {isProcessingPayment ? 'Recording...' : `Mark Paid (₹${bill.final_amount.toFixed(2)})`}
+                      {isProcessingPayment ? 'Recording...' : `Mark Settled (₹${bill.final_amount.toFixed(2)})`}
                     </button>
                   </div>
                 </div>
@@ -415,21 +411,21 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 
               {/* Void / Cancel Bill */}
               {bill.status !== 'Paid' && bill.status !== 'Cancelled' && (
-                <div className="mt-3 flex items-center justify-between no-print pt-3 border-t border-slate-100">
+                <div className="mt-3 pt-3 border-t border-borderLine flex items-center justify-between no-print text-xs">
                   <div className="flex items-center gap-2 flex-1 mr-4">
                     <input
                       type="text"
                       placeholder="Reason for cancellation..."
                       value={cancelReason}
                       onChange={(e) => setCancelReason(e.target.value)}
-                      className="text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg w-full max-w-xs"
+                      className="text-xs px-2.5 py-1 bg-ivory border border-borderLine rounded-md w-full max-w-xs text-charcoal"
                     />
                     <button
                       disabled={isCancelling}
                       onClick={handleCancelBill}
-                      className="text-xs font-semibold text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2 py-1.5 rounded-lg transition"
+                      className="text-xs font-medium text-terracotta hover:underline whitespace-nowrap"
                     >
-                      {isCancelling ? 'Cancelling...' : 'Cancel Bill'}
+                      {isCancelling ? 'Voiding...' : 'Void Invoice'}
                     </button>
                   </div>
                 </div>

@@ -2,28 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { ServiceRequest, RestaurantTable } from '../types';
 import { useSocket } from '../context/SocketContext';
-import { ManualRequestModal } from '../components/ManualRequestModal';
 import {
   Bell,
-  CheckCircle,
-  Clock,
-  Play,
-  XCircle,
-  Plus,
   Search,
   Filter,
-  Droplets,
-  HelpCircle,
-  Receipt,
+  CheckCircle,
+  Play,
+  XCircle,
+  Clock,
   User,
-  AlertTriangle
+  AlertCircle
 } from 'lucide-react';
 
 export const LiveRequestsPage: React.FC = () => {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [tables, setTables] = useState<RestaurantTable[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -58,7 +52,6 @@ export const LiveRequestsPage: React.FC = () => {
     loadRequests();
   }, [statusFilter, tableFilter, typeFilter, searchQuery]);
 
-  // Real-time updates via Socket.IO
   useEffect(() => {
     if (socket) {
       const handleUpdate = () => loadRequests();
@@ -74,7 +67,6 @@ export const LiveRequestsPage: React.FC = () => {
     }
   }, [socket, statusFilter, tableFilter, typeFilter, searchQuery]);
 
-  // Status Action Handlers
   const handleUpdateStatus = async (id: string, status: string, assignedStaff?: string) => {
     try {
       await api.updateRequestStatus(id, { status, assigned_staff: assignedStaff });
@@ -85,7 +77,7 @@ export const LiveRequestsPage: React.FC = () => {
   };
 
   const handleCancel = async (id: string) => {
-    const reason = prompt('Please enter cancellation reason:', 'Customer no longer needs assistance');
+    const reason = prompt('Please enter cancellation reason:', 'Guest requirement resolved');
     if (!reason) return;
     try {
       await api.updateRequestStatus(id, { status: 'Cancelled', cancel_reason: reason });
@@ -102,268 +94,189 @@ export const LiveRequestsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Header & New Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-navy-900 tracking-tight">Live Service Requests</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Incoming robot requests from dining tables requiring staff response.
-          </p>
-        </div>
-
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs transition active:scale-95 self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Manual Service Call</span>
-        </button>
+      {/* Page Context Description */}
+      <div>
+        <h2 className="text-xl font-serif text-charcoal">Live Service Requests</h2>
+        <p className="text-xs text-muted mt-0.5">
+          Real-time customer signals received through ARIA table-side units.
+        </p>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-wrap items-center gap-3">
-        {/* Search Input */}
+      <div className="bg-white p-3.5 rounded-lg border border-borderLine shadow-subtle flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[200px] relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-muted absolute left-3 top-2.5" />
           <input
             type="text"
-            placeholder="Search by ID, table, or message..."
+            placeholder="Search by table, request type, or note..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-1 focus:ring-teal-500 focus:outline-hidden"
+            className="w-full text-xs pl-9 pr-3 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal focus:outline-hidden focus:border-forest-800"
           />
         </div>
 
-        {/* Status Filter */}
-        <div className="flex items-center gap-1.5 text-xs text-slate-600">
-          <Filter className="w-3.5 h-3.5 text-slate-400" />
+        <div className="flex items-center gap-1.5 text-xs text-muted">
+          <span>Status:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-1 focus:ring-teal-500"
+            className="text-xs px-2.5 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal"
           >
             <option value="all">All Statuses</option>
-            <option value="New">New (Unanswered)</option>
+            <option value="New">New (Unattended)</option>
             <option value="Acknowledged">Acknowledged</option>
             <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
+            <option value="Completed">Resolved</option>
             <option value="Cancelled">Cancelled</option>
           </select>
         </div>
 
-        {/* Table Filter */}
-        <select
-          value={tableFilter}
-          onChange={(e) => setTableFilter(e.target.value)}
-          className="text-xs px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-1 focus:ring-teal-500"
-        >
-          <option value="all">All Tables</option>
-          {tables.map(t => (
-            <option key={t.id} value={t.id}>{t.name} ({t.id})</option>
-          ))}
-        </select>
-
-        {/* Request Type Filter */}
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="text-xs px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-1 focus:ring-teal-500"
-        >
-          <option value="all">All Request Types</option>
-          <option value="water">💧 Water</option>
-          <option value="waiter">🛎️ Call Waiter</option>
-          <option value="bill">🧾 Bill Request</option>
-          <option value="assistance">🙋 Assistance</option>
-          <option value="custom">💬 Custom</option>
-        </select>
+        <div className="flex items-center gap-1.5 text-xs text-muted">
+          <span>Table:</span>
+          <select
+            value={tableFilter}
+            onChange={(e) => setTableFilter(e.target.value)}
+            className="text-xs px-2.5 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal"
+          >
+            <option value="all">All Tables</option>
+            {tables.map(t => (
+              <option key={t.id} value={t.id}>{t.name} ({t.id})</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Requests Grid */}
-      {loading && requests.length === 0 ? (
-        <div className="py-20 text-center text-slate-400 text-xs">
-          Loading service requests...
-        </div>
-      ) : requests.length === 0 ? (
-        <div className="py-20 text-center bg-white rounded-2xl border border-slate-200 p-8">
-          <Bell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-          <h3 className="font-bold text-slate-700 text-sm">No service requests match the filter</h3>
-          <p className="text-xs text-slate-400 mt-1">Try resetting the filters or use the demo bar to simulate a call.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {requests.map((req) => {
-            const elapsed = getElapsedMinutes(req.created_at);
-            const isOverdue = elapsed >= 5 && (req.status === 'New' || req.status === 'Acknowledged');
+      {/* Requests List */}
+      <div className="bg-white rounded-lg border border-borderLine shadow-subtle overflow-hidden">
+        {loading && requests.length === 0 ? (
+          <div className="py-20 text-center text-xs font-mono text-muted">Loading requests...</div>
+        ) : requests.length === 0 ? (
+          <div className="py-16 text-center">
+            <p className="text-sm font-serif text-charcoal">No service calls in this view</p>
+            <p className="text-xs text-muted mt-1">Use the event simulator to transmit a sample customer call from ARIA.</p>
+          </div>
+        ) : (
+          <table className="w-full text-left text-xs">
+            <thead className="bg-ivory border-b border-borderLine text-muted font-medium font-mono text-[11px]">
+              <tr>
+                <th className="py-3 px-4">TABLE</th>
+                <th className="py-3 px-4">REQUEST</th>
+                <th className="py-3 px-4">DETAILS</th>
+                <th className="py-3 px-4">WAITING TIME</th>
+                <th className="py-3 px-4">STATUS</th>
+                <th className="py-3 px-4">ASSIGNED</th>
+                <th className="py-3 px-4 text-right">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-borderLine">
+              {requests.map((req) => {
+                const elapsedMin = getElapsedMinutes(req.created_at);
+                const isOverdue = elapsedMin >= 5 && req.status === 'New';
 
-            return (
-              <div
-                key={req.id}
-                className={`bg-white rounded-2xl p-5 border shadow-2xs flex flex-col justify-between transition-all ${
-                  req.status === 'New'
-                    ? isOverdue
-                      ? 'border-rose-400 urgent-alert ring-1 ring-rose-300'
-                      : 'border-rose-200 bg-rose-50/20'
-                    : req.status === 'Acknowledged'
-                    ? 'border-amber-200'
-                    : req.status === 'In Progress'
-                    ? 'border-blue-200'
-                    : req.status === 'Completed'
-                    ? 'border-emerald-200 bg-slate-50/50 opacity-80'
-                    : 'border-slate-200 bg-slate-50/40 opacity-70'
-                }`}
-              >
-                <div>
-                  {/* Top Header of Card */}
-                  <div className="flex items-start justify-between gap-2 pb-3 border-b border-slate-100">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`p-2 rounded-xl ${
-                        req.request_type === 'water' ? 'bg-sky-100 text-sky-700' :
-                        req.request_type === 'waiter' ? 'bg-amber-100 text-amber-700' :
-                        req.request_type === 'bill' ? 'bg-emerald-100 text-emerald-700' :
-                        'bg-purple-100 text-purple-700'
-                      }`}>
-                        {req.request_type === 'water' && <Droplets className="w-4 h-4" />}
-                        {req.request_type === 'waiter' && <Bell className="w-4 h-4" />}
-                        {req.request_type === 'bill' && <Receipt className="w-4 h-4" />}
-                        {req.request_type !== 'water' && req.request_type !== 'waiter' && req.request_type !== 'bill' && <HelpCircle className="w-4 h-4" />}
-                      </div>
+                return (
+                  <tr
+                    key={req.id}
+                    className={`transition-colors ${
+                      req.status === 'New'
+                        ? 'bg-sage-50/40 hover:bg-sage-50/70'
+                        : 'hover:bg-ivory/50'
+                    }`}
+                  >
+                    <td className="py-3 px-4 font-mono font-bold text-charcoal">
+                      {req.table_id}
+                    </td>
 
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <h4 className="font-bold text-sm text-navy-900">{req.table_name || req.table_id}</h4>
-                          <span className="text-[10px] text-slate-400 font-mono">({req.id})</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 font-medium">
-                          Robot: <strong className="text-slate-700">{req.robot_name || req.robot_id || 'Direct'}</strong>
-                        </p>
-                      </div>
-                    </div>
+                    <td className="py-3 px-4">
+                      <span className="font-semibold text-charcoal capitalize">
+                        {req.request_type === 'water' ? 'Water Refill' :
+                         req.request_type === 'waiter' ? 'Call Waiter' :
+                         req.request_type === 'bill' ? 'Bill Request' :
+                         req.request_type}
+                      </span>
+                    </td>
 
-                    <div className="flex flex-col items-end">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                        req.status === 'New' ? 'bg-rose-100 text-rose-800' :
-                        req.status === 'Acknowledged' ? 'bg-amber-100 text-amber-800' :
-                        req.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
-                        req.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
-                        'bg-slate-200 text-slate-700'
+                    <td className="py-3 px-4 text-muted max-w-xs truncate">
+                      {req.message || `Customer signaled robot`}
+                      {req.cancel_reason && (
+                        <span className="block text-[11px] text-terracotta mt-0.5">
+                          Reason: {req.cancel_reason}
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3 px-4 font-mono text-muted">
+                      {elapsedMin === 0 ? 'Just now' : `${elapsedMin}m ago`}
+                      {isOverdue && (
+                        <span className="ml-1 text-[10px] text-terracotta font-semibold">
+                          (Overdue)
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3 px-4">
+                      <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono ${
+                        req.status === 'New'
+                          ? 'bg-terracotta-light text-terracotta-dark font-semibold'
+                          : req.status === 'Acknowledged'
+                          ? 'bg-sage-100 text-forest-800'
+                          : req.status === 'In Progress'
+                          ? 'bg-forest-50 text-forest-800'
+                          : req.status === 'Completed'
+                          ? 'bg-ivory text-forest-800'
+                          : 'bg-ivory text-muted'
                       }`}>
                         {req.status}
                       </span>
-                      {isOverdue && (
-                        <span className="text-[9px] font-bold text-rose-600 mt-1 flex items-center gap-0.5">
-                          <AlertTriangle className="w-3 h-3 text-rose-500" />
-                          OVERDUE {elapsed}m
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    </td>
 
-                  {/* Message Body */}
-                  <div className="py-3">
-                    <p className="text-xs text-slate-800 font-medium leading-relaxed">
-                      {req.message || `Customer requested ${req.request_type}`}
-                    </p>
+                    <td className="py-3 px-4 text-muted font-mono">
+                      {req.assigned_staff || '—'}
+                    </td>
 
-                    {req.cancel_reason && (
-                      <p className="text-[11px] text-rose-600 mt-1.5 bg-rose-50 p-1.5 rounded-md border border-rose-200">
-                        Reason: {req.cancel_reason}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Metadata Row */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-400" />
-                      <span>{elapsed === 0 ? 'Just now' : `${elapsed}m ago`}</span>
-                    </div>
-
-                    {req.assigned_staff ? (
-                      <div className="flex items-center gap-1 text-slate-600">
-                        <User className="w-3 h-3 text-teal-600" />
-                        <span>{req.assigned_staff}</span>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {req.status === 'New' && (
+                          <button
+                            onClick={() => handleUpdateStatus(req.id, 'Acknowledged', 'Captain')}
+                            className="px-2.5 py-1 rounded text-xs font-medium bg-forest-800 hover:bg-forest-900 text-white transition-colors"
+                          >
+                            Acknowledge
+                          </button>
+                        )}
+                        {req.status === 'Acknowledged' && (
+                          <button
+                            onClick={() => handleUpdateStatus(req.id, 'In Progress')}
+                            className="px-2.5 py-1 rounded text-xs font-medium bg-sage-200 hover:bg-sage-300 text-forest-900 transition-colors"
+                          >
+                            Start
+                          </button>
+                        )}
+                        {req.status === 'In Progress' && (
+                          <button
+                            onClick={() => handleUpdateStatus(req.id, 'Completed')}
+                            className="px-2.5 py-1 rounded text-xs font-medium bg-forest-800 hover:bg-forest-900 text-white transition-colors"
+                          >
+                            Complete
+                          </button>
+                        )}
+                        {req.status !== 'Completed' && req.status !== 'Cancelled' && (
+                          <button
+                            onClick={() => handleCancel(req.id)}
+                            className="px-2 py-1 rounded text-xs font-medium text-muted hover:text-terracotta transition-colors"
+                            title="Cancel Request"
+                          >
+                            Cancel
+                          </button>
+                        )}
                       </div>
-                    ) : (
-                      <span className="text-slate-400 italic">Unassigned</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Bottom Action Buttons */}
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
-                  {req.status === 'New' && (
-                    <>
-                      <button
-                        onClick={() => handleUpdateStatus(req.id, 'Acknowledged', 'Captain')}
-                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-600 hover:text-white transition"
-                      >
-                        Acknowledge
-                      </button>
-                      <button
-                        onClick={() => handleCancel(req.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                        title="Cancel Request"
-                      >
-                        <XCircle className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-
-                  {req.status === 'Acknowledged' && (
-                    <>
-                      <button
-                        onClick={() => handleUpdateStatus(req.id, 'In Progress')}
-                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition flex items-center justify-center gap-1"
-                      >
-                        <Play className="w-3 h-3" />
-                        <span>Start Handling</span>
-                      </button>
-                      <button
-                        onClick={() => handleCancel(req.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                      >
-                        <XCircle className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-
-                  {req.status === 'In Progress' && (
-                    <>
-                      <button
-                        onClick={() => handleUpdateStatus(req.id, 'Completed')}
-                        className="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition flex items-center justify-center gap-1 shadow-2xs"
-                      >
-                        <CheckCircle className="w-3 h-3" />
-                        <span>Mark Resolved</span>
-                      </button>
-                      <button
-                        onClick={() => handleCancel(req.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                      >
-                        <XCircle className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-
-                  {(req.status === 'Completed' || req.status === 'Cancelled') && (
-                    <span className="text-[11px] text-slate-400 font-medium py-1">
-                      Archived in database history
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Manual Request Modal */}
-      <ManualRequestModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        tables={tables}
-        onCreated={() => loadRequests()}
-      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };

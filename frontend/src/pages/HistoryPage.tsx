@@ -11,7 +11,8 @@ import {
   Activity,
   CheckCircle2,
   XCircle,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react';
 
 interface HistoryPageProps {
@@ -59,21 +60,23 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onOpenReceipt }) => {
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Title & Tabs Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-borderLine">
         <div>
-          <h2 className="text-xl font-bold text-navy-900 tracking-tight">Request & Order History</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Permanent persistent archive of resolved requests, completed kitchen orders, and settled bills.
+          <h2 className="font-serif text-2xl font-normal text-charcoal tracking-tight">Audit & Archives</h2>
+          <p className="text-xs text-muted mt-1 font-sans">
+            Historical ledger of fulfilled service calls, completed kitchen orders, and settled invoices.
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="bg-slate-200/80 p-1 rounded-xl flex items-center text-xs font-semibold self-start sm:self-auto">
+        {/* Tab Pills */}
+        <div className="bg-forest-50 p-1 rounded-md border border-borderLine flex items-center text-xs font-medium self-start sm:self-auto">
           <button
             onClick={() => setActiveTab('requests')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-              activeTab === 'requests' ? 'bg-white text-navy-900 shadow-2xs' : 'text-slate-600 hover:text-navy-900'
+            className={`px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 ${
+              activeTab === 'requests'
+                ? 'bg-white text-charcoal font-semibold shadow-xs border border-borderLine'
+                : 'text-muted hover:text-charcoal'
             }`}
           >
             <Bell className="w-3.5 h-3.5" />
@@ -81,8 +84,10 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onOpenReceipt }) => {
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-              activeTab === 'orders' ? 'bg-white text-navy-900 shadow-2xs' : 'text-slate-600 hover:text-navy-900'
+            className={`px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 ${
+              activeTab === 'orders'
+                ? 'bg-white text-charcoal font-semibold shadow-xs border border-borderLine'
+                : 'text-muted hover:text-charcoal'
             }`}
           >
             <UtensilsCrossed className="w-3.5 h-3.5" />
@@ -90,17 +95,21 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onOpenReceipt }) => {
           </button>
           <button
             onClick={() => setActiveTab('bills')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-              activeTab === 'bills' ? 'bg-white text-navy-900 shadow-2xs' : 'text-slate-600 hover:text-navy-900'
+            className={`px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 ${
+              activeTab === 'bills'
+                ? 'bg-white text-charcoal font-semibold shadow-xs border border-borderLine'
+                : 'text-muted hover:text-charcoal'
             }`}
           >
             <Receipt className="w-3.5 h-3.5" />
-            <span>Paid Bills ({data.bills?.length || 0})</span>
+            <span>Bills ({data.bills?.length || 0})</span>
           </button>
           <button
             onClick={() => setActiveTab('logs')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-              activeTab === 'logs' ? 'bg-white text-navy-900 shadow-2xs' : 'text-slate-600 hover:text-navy-900'
+            className={`px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 ${
+              activeTab === 'logs'
+                ? 'bg-white text-charcoal font-semibold shadow-xs border border-borderLine'
+                : 'text-muted hover:text-charcoal'
             }`}
           >
             <Activity className="w-3.5 h-3.5" />
@@ -109,180 +118,194 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({ onOpenReceipt }) => {
         </div>
       </div>
 
-      {/* Filter and Search */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-wrap items-center gap-3">
+      {/* Filter and Search Bar */}
+      <div className="bg-white p-3.5 rounded-lg border border-borderLine shadow-2xs flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[200px] relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-3.5 h-3.5 text-muted absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Search archive..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-1 focus:ring-teal-500"
+            className="w-full text-xs pl-8.5 pr-3 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal placeholder:text-muted/60 focus:outline-hidden focus:border-forest-700"
           />
         </div>
 
         <select
           value={tableFilter}
           onChange={(e) => setTableFilter(e.target.value)}
-          className="text-xs px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"
+          className="text-xs px-3 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal focus:outline-hidden focus:border-forest-700"
         >
           <option value="all">All Tables</option>
           {tables.map(t => (
             <option key={t.id} value={t.id}>{t.name} ({t.id})</option>
           ))}
         </select>
+
+        <button
+          onClick={() => loadHistory()}
+          className="p-1.5 rounded-md border border-borderLine text-muted hover:text-charcoal hover:bg-forest-50 transition-colors"
+          title="Refresh"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
-      {/* Main Content Area */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+      {/* Main Historical Table */}
+      <div className="bg-white rounded-lg border border-borderLine shadow-2xs overflow-hidden">
         {loading ? (
-          <div className="py-20 text-center text-xs text-slate-400">Loading history records...</div>
+          <div className="py-20 text-center text-xs text-muted font-mono">Loading archive...</div>
         ) : activeTab === 'requests' ? (
-          /* Past Requests */
           (!data.requests || data.requests.length === 0) ? (
-            <div className="py-20 text-center text-xs text-slate-400">No resolved or cancelled requests in archive.</div>
+            <div className="py-20 text-center text-xs text-muted font-sans">No resolved or cancelled requests in archive.</div>
           ) : (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
-                <tr>
-                  <th className="py-3 px-4">REQ ID</th>
-                  <th className="py-3 px-4">TABLE</th>
-                  <th className="py-3 px-4">TYPE</th>
-                  <th className="py-3 px-4">MESSAGE</th>
-                  <th className="py-3 px-4">STATUS</th>
-                  <th className="py-3 px-4">STAFF</th>
-                  <th className="py-3 px-4 text-right">DATE / TIME</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.requests.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50/50">
-                    <td className="py-3 px-4 font-mono font-bold text-navy-900">{r.id}</td>
-                    <td className="py-3 px-4 font-semibold text-slate-800">{r.table_name || r.table_id}</td>
-                    <td className="py-3 px-4 capitalize">{r.request_type}</td>
-                    <td className="py-3 px-4 text-slate-600 max-w-xs truncate">{r.message || '-'}</td>
-                    <td className="py-3 px-4">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        r.status === 'Completed' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-                      }`}>
-                        {r.status === 'Completed' ? <CheckCircle2 className="w-3 h-3 text-emerald-600" /> : <XCircle className="w-3 h-3 text-rose-600" />}
-                        {r.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-600">{r.assigned_staff || '-'}</td>
-                    <td className="py-3 px-4 text-right text-slate-400">
-                      {new Date(r.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-forest-50/70 border-b border-borderLine text-muted font-mono uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="py-2.5 px-4 font-medium">Req ID</th>
+                    <th className="py-2.5 px-4 font-medium">Table</th>
+                    <th className="py-2.5 px-4 font-medium">Type</th>
+                    <th className="py-2.5 px-4 font-medium">Customer Verbal Message</th>
+                    <th className="py-2.5 px-4 font-medium">Status</th>
+                    <th className="py-2.5 px-4 font-medium">Staff</th>
+                    <th className="py-2.5 px-4 text-right font-medium">Timestamp</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-borderLine font-sans">
+                  {data.requests.map((r) => (
+                    <tr key={r.id} className="hover:bg-forest-50/40 transition-colors">
+                      <td className="py-3 px-4 font-mono font-medium text-charcoal">{r.id}</td>
+                      <td className="py-3 px-4 font-mono text-xs">{r.table_name || r.table_id}</td>
+                      <td className="py-3 px-4 capitalize text-charcoal">{r.request_type}</td>
+                      <td className="py-3 px-4 text-muted max-w-xs truncate">{r.message || '-'}</td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                          r.status === 'Completed'
+                            ? 'bg-sage-100 text-forest-900 border border-sage-200'
+                            : 'bg-terracotta/10 text-terracotta border border-terracotta/20'
+                        }`}>
+                          {r.status === 'Completed' ? <CheckCircle2 className="w-3 h-3 text-forest-800" /> : <XCircle className="w-3 h-3 text-terracotta" />}
+                          {r.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-muted">{r.assigned_staff || 'Staff'}</td>
+                      <td className="py-3 px-4 text-right font-mono text-[11px] text-muted">
+                        {new Date(r.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )
         ) : activeTab === 'orders' ? (
-          /* Past Orders */
           (!data.orders || data.orders.length === 0) ? (
-            <div className="py-20 text-center text-xs text-slate-400">No past orders in archive.</div>
+            <div className="py-20 text-center text-xs text-muted font-sans">No past orders in archive.</div>
           ) : (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
-                <tr>
-                  <th className="py-3 px-4">ORDER ID</th>
-                  <th className="py-3 px-4">TABLE</th>
-                  <th className="py-3 px-4">ITEMS</th>
-                  <th className="py-3 px-4 text-right">SUBTOTAL</th>
-                  <th className="py-3 px-4">STATUS</th>
-                  <th className="py-3 px-4 text-right">DATE / TIME</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.orders.map((o) => (
-                  <tr key={o.id} className="hover:bg-slate-50/50">
-                    <td className="py-3 px-4 font-mono font-bold text-navy-900">{o.id}</td>
-                    <td className="py-3 px-4 font-semibold text-slate-800">{o.table_name || o.table_id}</td>
-                    <td className="py-3 px-4 text-slate-600">
-                      {o.items ? o.items.map(i => `${i.quantity}x ${i.item_name}`).join(', ') : `${o.item_count} item(s)`}
-                    </td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-800">₹{o.subtotal.toFixed(2)}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                        {o.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right text-slate-400">
-                      {new Date(o.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-forest-50/70 border-b border-borderLine text-muted font-mono uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="py-2.5 px-4 font-medium">Order ID</th>
+                    <th className="py-2.5 px-4 font-medium">Table</th>
+                    <th className="py-2.5 px-4 font-medium">Dishes Ordered</th>
+                    <th className="py-2.5 px-4 text-right font-medium">Subtotal</th>
+                    <th className="py-2.5 px-4 font-medium">Status</th>
+                    <th className="py-2.5 px-4 text-right font-medium">Timestamp</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-borderLine font-sans">
+                  {data.orders.map((o) => (
+                    <tr key={o.id} className="hover:bg-forest-50/40 transition-colors">
+                      <td className="py-3 px-4 font-mono font-medium text-charcoal">{o.id}</td>
+                      <td className="py-3 px-4 font-mono text-xs">{o.table_name || o.table_id}</td>
+                      <td className="py-3 px-4 text-charcoal font-medium">
+                        {o.items ? o.items.map(i => `${i.quantity}x ${i.item_name}`).join(', ') : `${o.item_count} item(s)`}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-forest-900">₹{o.subtotal.toFixed(2)}</td>
+                      <td className="py-3 px-4">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-sage-100 text-forest-900 border border-sage-200">
+                          {o.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono text-[11px] text-muted">
+                        {new Date(o.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )
         ) : activeTab === 'bills' ? (
-          /* Paid / Cancelled Bills */
           (!data.bills || data.bills.length === 0) ? (
-            <div className="py-20 text-center text-xs text-slate-400">No settled bills in archive.</div>
+            <div className="py-20 text-center text-xs text-muted font-sans">No settled bills in archive.</div>
           ) : (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
-                <tr>
-                  <th className="py-3 px-4">INVOICE #</th>
-                  <th className="py-3 px-4">TABLE</th>
-                  <th className="py-3 px-4">PAYMENT METHOD</th>
-                  <th className="py-3 px-4 text-right">TOTAL (₹)</th>
-                  <th className="py-3 px-4">SETTLEMENT STATUS</th>
-                  <th className="py-3 px-4">SETTLED AT</th>
-                  <th className="py-3 px-4 text-right">RECEIPT</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.bills.map((b) => (
-                  <tr key={b.id} className="hover:bg-slate-50/50">
-                    <td className="py-3 px-4 font-mono font-bold text-navy-900">{b.invoice_number}</td>
-                    <td className="py-3 px-4 font-semibold text-slate-800">{b.table_name || b.table_id}</td>
-                    <td className="py-3 px-4 text-slate-600">{b.payment_method || 'Cash'} {b.payment_reference ? `(${b.payment_reference})` : ''}</td>
-                    <td className="py-3 px-4 text-right font-bold text-teal-800">₹{b.final_amount.toFixed(2)}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        b.status === 'Paid' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-                      }`}>
-                        {b.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-400">
-                      {b.paid_at ? new Date(b.paid_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : new Date(b.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => onOpenReceipt(b.id)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-teal-700 hover:bg-slate-100"
-                        title="View Receipt"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-forest-50/70 border-b border-borderLine text-muted font-mono uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="py-2.5 px-4 font-medium">Invoice #</th>
+                    <th className="py-2.5 px-4 font-medium">Table</th>
+                    <th className="py-2.5 px-4 font-medium">Payment Channel</th>
+                    <th className="py-2.5 px-4 text-right font-medium">Settled Amount</th>
+                    <th className="py-2.5 px-4 font-medium">Status</th>
+                    <th className="py-2.5 px-4 font-medium">Timestamp</th>
+                    <th className="py-2.5 px-4 text-right font-medium">Receipt</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-borderLine font-sans">
+                  {data.bills.map((b) => (
+                    <tr key={b.id} className="hover:bg-forest-50/40 transition-colors">
+                      <td className="py-3 px-4 font-mono font-medium text-charcoal">{b.invoice_number}</td>
+                      <td className="py-3 px-4 font-mono text-xs">{b.table_name || b.table_id}</td>
+                      <td className="py-3 px-4 text-charcoal">{b.payment_method || 'Cash'} {b.payment_reference ? `(${b.payment_reference})` : ''}</td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-forest-900">₹{b.final_amount.toFixed(2)}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                          b.status === 'Paid'
+                            ? 'bg-sage-100 text-forest-900 border border-sage-200'
+                            : 'bg-terracotta/10 text-terracotta border border-terracotta/20'
+                        }`}>
+                          {b.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[11px] text-muted">
+                        {b.paid_at ? new Date(b.paid_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : new Date(b.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => onOpenReceipt(b.id)}
+                          className="p-1 rounded text-muted hover:text-forest-800 hover:bg-forest-50 transition-colors"
+                          title="View Receipt"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )
         ) : (
-          /* Activity Audit Logs */
           (!data.activity || data.activity.length === 0) ? (
-            <div className="py-20 text-center text-xs text-slate-400">No activity logs recorded.</div>
+            <div className="py-20 text-center text-xs text-muted font-sans">No activity logs recorded.</div>
           ) : (
-            <div className="divide-y divide-slate-100 p-4 space-y-3">
+            <div className="divide-y divide-borderLine p-4 space-y-2">
               {data.activity.map((act) => (
                 <div key={act.id} className="pt-2 flex items-start justify-between gap-4 text-xs">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-navy-900">{act.title}</span>
-                      <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
+                      <span className="font-medium text-charcoal">{act.title}</span>
+                      <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-forest-50 text-muted border border-borderLine">
                         {act.type}
                       </span>
                     </div>
-                    <p className="text-slate-600 mt-0.5">{act.description}</p>
+                    <p className="text-muted mt-0.5">{act.description}</p>
                   </div>
-                  <span className="text-[11px] text-slate-400 shrink-0">
+                  <span className="text-[11px] font-mono text-muted shrink-0">
                     {new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>

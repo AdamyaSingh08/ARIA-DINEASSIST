@@ -8,9 +8,8 @@ import {
   History,
   Cpu,
   Bot,
-  UserCheck,
-  ChevronRight,
-  Sparkles
+  Wifi,
+  ChevronRight
 } from 'lucide-react';
 
 export type NavTab = 'overview' | 'requests' | 'orders' | 'tables' | 'billing' | 'history' | 'settings';
@@ -26,7 +25,8 @@ interface SidebarProps {
     openBills: number;
     connectedRobots: number;
   };
-  demoMode: boolean;
+  robotLocation?: string;
+  isRobotOnline?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -35,112 +35,89 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   onClose,
   badgeCounts,
-  demoMode
+  robotLocation = 'T04',
+  isRobotOnline = true
 }) => {
   const navItems: Array<{
     id: NavTab;
     label: string;
-    sublabel: string;
     icon: React.ReactNode;
     badge?: number;
-    badgeColor?: string;
+    badgeAlert?: boolean;
   }> = [
     {
       id: 'overview',
       label: 'Overview',
-      sublabel: 'Command Center',
-      icon: <LayoutDashboard className="w-5 h-5" />
+      icon: <LayoutDashboard className="w-4 h-4" />
     },
     {
       id: 'requests',
       label: 'Live Requests',
-      sublabel: 'Customer Robot Calls',
-      icon: <Bell className="w-5 h-5" />,
+      icon: <Bell className="w-4 h-4" />,
       badge: badgeCounts.newRequests,
-      badgeColor: 'bg-rose-500 text-white'
+      badgeAlert: badgeCounts.newRequests > 0
     },
     {
       id: 'orders',
       label: 'Food Orders',
-      sublabel: 'Kitchen Pipeline',
-      icon: <UtensilsCrossed className="w-5 h-5" />,
-      badge: badgeCounts.pendingOrders,
-      badgeColor: 'bg-blue-600 text-white'
+      icon: <UtensilsCrossed className="w-4 h-4" />,
+      badge: badgeCounts.pendingOrders
     },
     {
       id: 'tables',
       label: 'Tables & Robots',
-      sublabel: 'Floor & Hardware State',
-      icon: <LayoutGrid className="w-5 h-5" />,
-      badge: badgeCounts.connectedRobots,
-      badgeColor: 'bg-teal-600 text-white'
+      icon: <LayoutGrid className="w-4 h-4" />
     },
     {
       id: 'billing',
       label: 'Billing & Receipts',
-      sublabel: 'POS & Tax Invoices',
-      icon: <Receipt className="w-5 h-5" />,
-      badge: badgeCounts.openBills,
-      badgeColor: 'bg-amber-600 text-white'
+      icon: <Receipt className="w-4 h-4" />,
+      badge: badgeCounts.openBills
     },
     {
       id: 'history',
       label: 'History & Logs',
-      sublabel: 'Audit & Records',
-      icon: <History className="w-5 h-5" />
+      icon: <History className="w-4 h-4" />
     },
     {
       id: 'settings',
-      label: 'Robot Integration',
-      sublabel: 'XiaoZhi API & Gateway',
-      icon: <Cpu className="w-5 h-5" />
+      label: 'Robot Gateway',
+      icon: <Cpu className="w-4 h-4" />
     }
   ];
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile backdrop */}
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-navy-950/50 backdrop-blur-xs z-40 lg:hidden"
+          className="fixed inset-0 bg-charcoal/30 backdrop-blur-xs z-40 lg:hidden"
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Slim, elegant sidebar */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-navy-900 text-slate-200 flex flex-col transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-forest-900 text-slate-100 flex flex-col transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-navy-800 bg-navy-950/60">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-teal-400 text-navy-950 flex items-center justify-center font-black text-lg shadow-md shadow-teal-500/20">
-              <Bot className="w-5 h-5 text-navy-950" />
+        {/* Brand header */}
+        <div className="h-16 flex items-center px-5 border-b border-forest-800">
+          <div className="flex items-center gap-2.5">
+            {/* Custom ARIA monogram */}
+            <div className="w-7 h-7 rounded-md bg-forest-700 border border-forest-600 flex items-center justify-center font-serif text-citrus font-bold text-sm tracking-wide shadow-xs">
+              A
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-base tracking-tight text-white">DineAssist</span>
-                <span className="text-[10px] font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/30 px-1.5 py-0.2 rounded">
-                  v1.0
-                </span>
+              <div className="flex items-center gap-1.5 leading-none">
+                <span className="font-semibold text-sm tracking-tight text-white">ARIA</span>
+                <span className="text-[10px] uppercase tracking-wider text-sage-300 font-mono">DineAssist</span>
               </div>
-              <p className="text-[11px] text-slate-400">INNOTech Hackathon</p>
+              <p className="text-[11px] text-sage-400/80 mt-0.5">Table-side Robot System</p>
             </div>
           </div>
         </div>
-
-        {/* Demo Mode Notice in Sidebar */}
-        {demoMode && (
-          <div className="mx-4 mt-3 p-2.5 rounded-lg bg-teal-950/60 border border-teal-500/30 text-teal-200 text-xs flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-teal-400 shrink-0" />
-            <div className="text-[11px] leading-tight">
-              <span className="font-semibold text-white">Hardware Bridge Active</span>
-              <p className="text-teal-300/80">XiaoZhi simulator & REST ready</p>
-            </div>
-          </div>
-        )}
 
         {/* Navigation list */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -153,50 +130,48 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onSelectTab(item.id);
                   onClose();
                 }}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left transition-all group ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors text-left ${
                   isActive
-                    ? 'bg-teal-600 text-white font-semibold shadow-sm shadow-teal-600/30'
-                    : 'text-slate-300 hover:bg-navy-800/80 hover:text-white'
+                    ? 'bg-forest-800 text-white font-semibold'
+                    : 'text-sage-200/80 hover:bg-forest-850 hover:text-white'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-teal-400 transition-colors'}`}>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className={isActive ? 'text-citrus' : 'text-sage-400'}>
                     {item.icon}
                   </span>
-                  <div className="truncate">
-                    <div className="text-xs font-medium leading-none">{item.label}</div>
-                    <div className={`text-[10px] mt-0.5 ${isActive ? 'text-teal-100' : 'text-slate-500 group-hover:text-slate-400'}`}>
-                      {item.sublabel}
-                    </div>
-                  </div>
+                  <span className="truncate">{item.label}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {item.badge !== undefined && item.badge > 0 && (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${item.badgeColor}`}>
-                      {item.badge}
-                    </span>
-                  )}
-                  {isActive && <ChevronRight className="w-4 h-4 text-teal-200" />}
-                </div>
+                {item.badge !== undefined && item.badge > 0 && (
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold leading-none ${
+                    item.badgeAlert
+                      ? 'bg-terracotta text-white'
+                      : 'bg-forest-700 text-sage-200'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
 
-        {/* Staff & Session Footer */}
-        <div className="p-4 border-t border-navy-800 bg-navy-950/40">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-navy-800 border border-navy-700 flex items-center justify-center text-teal-400">
-              <UserCheck className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white truncate">Staff Operator</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <p className="text-[11px] text-slate-400">Shift Active · Counter 1</p>
+        {/* Real Hardware Connection State at Bottom */}
+        <div className="p-3.5 border-t border-forest-800 bg-forest-950/60">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${isRobotOnline ? 'bg-citrus' : 'bg-terracotta'}`} />
+              <div className="truncate">
+                <p className="font-medium text-white text-[11px] truncate">ARIA Robot 1</p>
+                <p className="text-[10px] text-sage-400 font-mono truncate">Stationed at {robotLocation}</p>
               </div>
             </div>
+            <span className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded ${
+              isRobotOnline ? 'text-citrus bg-forest-800' : 'text-terracotta bg-terracotta/10'
+            }`}>
+              {isRobotOnline ? 'Online' : 'Offline'}
+            </span>
           </div>
         </div>
       </aside>

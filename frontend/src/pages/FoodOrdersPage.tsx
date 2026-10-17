@@ -2,36 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { FoodOrder, MenuItem, RestaurantTable } from '../types';
 import { useSocket } from '../context/SocketContext';
-import { ManualOrderModal } from '../components/ManualOrderModal';
 import {
   UtensilsCrossed,
-  ChefHat,
-  CheckCircle2,
   Clock,
-  Plus,
-  Search,
   Filter,
-  Leaf,
+  Search,
   ChevronRight,
-  Flame,
-  Check,
-  AlertCircle
+  Eye,
+  CheckCircle2
 } from 'lucide-react';
 
 export const FoodOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<FoodOrder[]>([]);
-  const [tables, setTables] = useState<RestaurantTable[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [tables, setTables] = useState<RestaurantTable[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  // Tabs: Orders Pipeline vs Menu Card
-  const [activeTab, setActiveTab] = useState<'pipeline' | 'menu'>('pipeline');
+  const [activeTab, setActiveTab] = useState<'orders' | 'menu'>('orders');
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [tableFilter, setTableFilter] = useState<string>('all');
-  const [menuCategory, setMenuCategory] = useState<string>('all');
 
   const { socket } = useSocket();
 
@@ -57,7 +47,6 @@ export const FoodOrdersPage: React.FC = () => {
     loadData();
   }, [statusFilter, tableFilter]);
 
-  // Socket updates
   useEffect(() => {
     if (socket) {
       const handleUpdate = () => loadData();
@@ -73,7 +62,6 @@ export const FoodOrdersPage: React.FC = () => {
     }
   }, [socket, statusFilter, tableFilter]);
 
-  // Advance Order Workflow: Received -> Confirmed -> Preparing -> Ready -> Served
   const handleAdvanceStatus = async (orderId: string, currentStatus: string) => {
     const sequence: Record<string, string> = {
       Received: 'Confirmed',
@@ -88,95 +76,72 @@ export const FoodOrdersPage: React.FC = () => {
       await api.updateOrderStatus(orderId, nextStatus);
       loadData();
     } catch (err: any) {
-      alert(`Could not update order status: ${err.message}`);
+      alert(`Could not update order: ${err.message}`);
     }
   };
-
-  const handleCancelOrder = async (orderId: string) => {
-    if (!window.confirm('Cancel this kitchen order?')) return;
-    try {
-      await api.updateOrderStatus(orderId, 'Cancelled');
-      loadData();
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
-
-  const categories = ['all', ...Array.from(new Set(menuItems.map(m => m.category)))];
-  const filteredMenu = menuCategory === 'all'
-    ? menuItems
-    : menuItems.filter(m => m.category === menuCategory);
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-navy-900 tracking-tight">Food Orders & Kitchen Pipeline</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Robot voice orders and manual kitchen tickets with backend price verification.
+          <h2 className="text-xl font-serif text-charcoal">Food Orders & Kitchen Pipeline</h2>
+          <p className="text-xs text-muted mt-0.5">
+            Orders placed through ARIA table rover and verified against menu prices.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* View Switcher */}
-          <div className="bg-slate-200/80 p-1 rounded-xl flex items-center text-xs font-semibold">
-            <button
-              onClick={() => setActiveTab('pipeline')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === 'pipeline' ? 'bg-white text-navy-900 shadow-2xs' : 'text-slate-600 hover:text-navy-900'
-              }`}
-            >
-              Live Orders
-            </button>
-            <button
-              onClick={() => setActiveTab('menu')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === 'menu' ? 'bg-white text-navy-900 shadow-2xs' : 'text-slate-600 hover:text-navy-900'
-              }`}
-            >
-              Restaurant Menu
-            </button>
-          </div>
-
+        {/* View Switcher */}
+        <div className="flex items-center gap-1 bg-ivory p-1 rounded-md border border-borderLine text-xs font-mono self-start sm:self-auto">
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs transition"
+            onClick={() => setActiveTab('orders')}
+            className={`px-3 py-1 rounded transition-colors ${
+              activeTab === 'orders'
+                ? 'bg-white font-medium text-charcoal shadow-xs'
+                : 'text-muted hover:text-charcoal'
+            }`}
           >
-            <Plus className="w-4 h-4" />
-            <span>New Order</span>
+            Live Orders ({orders.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('menu')}
+            className={`px-3 py-1 rounded transition-colors ${
+              activeTab === 'menu'
+                ? 'bg-white font-medium text-charcoal shadow-xs'
+                : 'text-muted hover:text-charcoal'
+            }`}
+          >
+            Menu Catalog ({menuItems.length})
           </button>
         </div>
       </div>
 
-      {activeTab === 'pipeline' ? (
+      {activeTab === 'orders' ? (
         <>
-          {/* Filters Bar */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs text-slate-600">
-              <Filter className="w-3.5 h-3.5 text-slate-400" />
+          {/* Filter Bar */}
+          <div className="bg-white p-3.5 rounded-lg border border-borderLine shadow-subtle flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted">
               <span>Status:</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-1 focus:ring-teal-500"
+                className="text-xs px-2.5 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal"
               >
                 <option value="all">All States</option>
                 <option value="Received">Received</option>
                 <option value="Confirmed">Confirmed</option>
                 <option value="Preparing">Preparing</option>
-                <option value="Ready">Ready for Serving</option>
+                <option value="Ready">Ready to Serve</option>
                 <option value="Served">Served</option>
                 <option value="Cancelled">Cancelled</option>
               </select>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs text-slate-600">
+            <div className="flex items-center gap-1.5 text-xs text-muted">
               <span>Table:</span>
               <select
                 value={tableFilter}
                 onChange={(e) => setTableFilter(e.target.value)}
-                className="text-xs px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-1 focus:ring-teal-500"
+                className="text-xs px-2.5 py-1.5 bg-ivory border border-borderLine rounded-md text-charcoal"
               >
                 <option value="all">All Tables</option>
                 {tables.map(t => (
@@ -186,182 +151,142 @@ export const FoodOrdersPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Orders Pipeline List */}
-          {loading && orders.length === 0 ? (
-            <div className="py-20 text-center text-slate-400 text-xs">Loading food orders...</div>
-          ) : orders.length === 0 ? (
-            <div className="py-20 text-center bg-white rounded-2xl border border-slate-200 p-8">
-              <UtensilsCrossed className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <h3 className="font-bold text-slate-700 text-sm">No food orders in this view</h3>
-              <p className="text-xs text-slate-400 mt-1">Use the Demo Bar or click "New Order" to place a test kitchen ticket.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {orders.map((ord) => {
-                const isFinal = ord.status === 'Served' || ord.status === 'Cancelled';
-                return (
-                  <div
-                    key={ord.id}
-                    className={`bg-white rounded-2xl border p-5 shadow-2xs flex flex-col justify-between transition ${
-                      ord.status === 'Preparing' ? 'border-amber-300 ring-1 ring-amber-200 bg-amber-50/10' :
-                      ord.status === 'Ready' ? 'border-teal-400 ring-1 ring-teal-200 bg-teal-50/10' :
-                      ord.status === 'Served' ? 'border-slate-200 opacity-80' :
-                      'border-slate-200'
-                    }`}
-                  >
-                    <div>
-                      {/* Order Header */}
-                      <div className="flex items-start justify-between pb-3 border-b border-slate-100">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-sm text-navy-900">{ord.table_name || ord.table_id}</h4>
-                            <span className="text-[10px] text-slate-400 font-mono">({ord.id})</span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
-                            Robot: <strong className="text-slate-700">{ord.robot_name || ord.robot_id || 'Staff Terminal'}</strong>
-                          </p>
-                        </div>
+          {/* Orders Table */}
+          <div className="bg-white rounded-lg border border-borderLine shadow-subtle overflow-hidden">
+            {loading && orders.length === 0 ? (
+              <div className="py-20 text-center text-xs font-mono text-muted">Loading orders...</div>
+            ) : orders.length === 0 ? (
+              <div className="py-16 text-center">
+                <p className="text-sm font-serif text-charcoal">No food orders active</p>
+                <p className="text-xs text-muted mt-1">Orders appear here when a customer speaks their order to ARIA.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs">
+                <thead className="bg-ivory border-b border-borderLine text-muted font-medium font-mono text-[11px]">
+                  <tr>
+                    <th className="py-3 px-4">ORDER ID</th>
+                    <th className="py-3 px-4">TABLE</th>
+                    <th className="py-3 px-4">ITEMS</th>
+                    <th className="py-3 px-4 text-right">SUBTOTAL</th>
+                    <th className="py-3 px-4">STATUS</th>
+                    <th className="py-3 px-4">TIME</th>
+                    <th className="py-3 px-4 text-right">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-borderLine">
+                  {orders.map((ord) => {
+                    const isFinal = ord.status === 'Served' || ord.status === 'Cancelled';
 
-                        <div className="flex flex-col items-end">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                            ord.status === 'Received' ? 'bg-blue-100 text-blue-800' :
-                            ord.status === 'Confirmed' ? 'bg-sky-100 text-sky-800' :
-                            ord.status === 'Preparing' ? 'bg-amber-100 text-amber-800' :
-                            ord.status === 'Ready' ? 'bg-teal-100 text-teal-800' :
-                            ord.status === 'Served' ? 'bg-emerald-100 text-emerald-800' :
-                            'bg-slate-200 text-slate-700'
+                    return (
+                      <tr key={ord.id} className="hover:bg-ivory/50">
+                        <td className="py-3.5 px-4 font-mono font-bold text-charcoal">
+                          {ord.id}
+                        </td>
+
+                        <td className="py-3.5 px-4 font-mono font-semibold text-charcoal">
+                          {ord.table_id}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <div className="space-y-0.5">
+                            {ord.items && ord.items.map((it) => (
+                              <div key={it.id} className="text-charcoal font-medium">
+                                <span className="font-mono text-muted mr-1.5">{it.quantity}x</span>
+                                <span>{it.item_name}</span>
+                                {it.notes && <span className="text-muted text-[11px] ml-1">({it.notes})</span>}
+                              </div>
+                            ))}
+                          </div>
+                          {ord.special_instructions && (
+                            <p className="text-[11px] text-terracotta mt-1">
+                              Note: {ord.special_instructions}
+                            </p>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4 text-right font-mono font-bold text-forest-800">
+                          ₹{ord.subtotal.toFixed(2)}
+                        </td>
+
+                        <td className="py-3.5 px-4">
+                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono ${
+                            ord.status === 'Preparing' ? 'bg-sage-200 text-forest-900 font-medium' :
+                            ord.status === 'Ready' ? 'bg-forest-800 text-citrus font-medium' :
+                            ord.status === 'Served' ? 'bg-ivory text-muted' :
+                            'bg-sage-100 text-forest-800'
                           }`}>
                             {ord.status}
                           </span>
-                          <span className="text-[10px] text-slate-400 mt-1">
-                            {new Date(ord.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                      </div>
+                        </td>
 
-                      {/* Items List */}
-                      <div className="py-3 space-y-2">
-                        {ord.items && ord.items.map((it) => (
-                          <div key={it.id} className="flex items-start justify-between text-xs">
-                            <div className="flex items-start gap-1.5">
-                              <span className="font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
-                                {it.quantity}x
-                              </span>
-                              <div>
-                                <span className="font-medium text-slate-900">{it.item_name}</span>
-                                {it.notes && (
-                                  <p className="text-[10px] text-amber-700 italic">“{it.notes}”</p>
-                                )}
-                              </div>
-                            </div>
-                            <span className="font-semibold text-slate-700">₹{it.total_price.toFixed(2)}</span>
-                          </div>
-                        ))}
-                      </div>
+                        <td className="py-3.5 px-4 font-mono text-muted">
+                          {new Date(ord.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </td>
 
-                      {/* Special Kitchen Instructions */}
-                      {ord.special_instructions && (
-                        <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-900 mb-3">
-                          <strong>Note:</strong> {ord.special_instructions}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Order Footer & Status Progress Workflow */}
-                    <div className="pt-3 border-t border-slate-100">
-                      <div className="flex items-center justify-between text-xs mb-3 font-semibold">
-                        <span className="text-slate-500">Order Subtotal:</span>
-                        <span className="text-sm font-bold text-navy-900">₹{ord.subtotal.toFixed(2)}</span>
-                      </div>
-
-                      {!isFinal ? (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleAdvanceStatus(ord.id, ord.status)}
-                            className="flex-1 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-2xs"
-                          >
-                            {ord.status === 'Received' && <span>Confirm Order</span>}
-                            {ord.status === 'Confirmed' && <span>Send to Chef (Preparing)</span>}
-                            {ord.status === 'Preparing' && <span>Mark Ready to Serve</span>}
-                            {ord.status === 'Ready' && <span>Mark as Served</span>}
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            onClick={() => handleCancelOrder(ord.id)}
-                            className="px-2.5 py-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 text-xs transition"
-                            title="Cancel Order"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="text-center py-1 text-xs text-slate-400 font-medium">
-                          {ord.status === 'Served' ? 'Order delivered to table' : 'Order voided'}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                        <td className="py-3.5 px-4 text-right">
+                          {!isFinal ? (
+                            <button
+                              onClick={() => handleAdvanceStatus(ord.id, ord.status)}
+                              className="px-2.5 py-1 rounded text-xs font-medium bg-forest-800 hover:bg-forest-900 text-white transition-colors"
+                            >
+                              {ord.status === 'Received' && 'Confirm'}
+                              {ord.status === 'Confirmed' && 'Start Cooking'}
+                              {ord.status === 'Preparing' && 'Mark Ready'}
+                              {ord.status === 'Ready' && 'Mark Served'}
+                            </button>
+                          ) : (
+                            <span className="text-muted text-[11px] font-mono">Delivered</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
         </>
       ) : (
-        /* Restaurant Menu Card View */
-        <div className="space-y-4">
-          <div className="flex gap-2 overflow-x-auto pb-2 border-b border-slate-200">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setMenuCategory(cat)}
-                className={`px-4 py-1.5 rounded-xl text-xs font-semibold capitalize whitespace-nowrap transition ${
-                  menuCategory === cat
-                    ? 'bg-navy-900 text-white shadow-xs'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredMenu.map((item) => (
-              <div key={item.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs flex flex-col justify-between">
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-bold text-xs text-slate-900">{item.name}</h4>
-                    {item.is_veg ? (
-                      <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded shrink-0">
-                        <Leaf className="w-2.5 h-2.5 text-emerald-600" />
-                        VEG
-                      </span>
-                    ) : (
-                      <span className="text-[9px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-1.5 py-0.2 rounded shrink-0">
-                        NON-VEG
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{item.description}</p>
-                </div>
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
-                  <span className="text-xs font-bold text-teal-700">₹{item.price.toFixed(2)}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">ID: {item.id}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        /* Menu Catalog View */
+        <div className="bg-white rounded-lg border border-borderLine shadow-subtle overflow-hidden">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-ivory border-b border-borderLine text-muted font-medium font-mono text-[11px]">
+              <tr>
+                <th className="py-3 px-4">ITEM NAME</th>
+                <th className="py-3 px-4">CATEGORY</th>
+                <th className="py-3 px-4">TYPE</th>
+                <th className="py-3 px-4">DESCRIPTION</th>
+                <th className="py-3 px-4 text-right">UNIT PRICE</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-borderLine">
+              {menuItems.map((item) => (
+                <tr key={item.id} className="hover:bg-ivory/50">
+                  <td className="py-3 px-4 font-medium text-charcoal font-sans">
+                    {item.name}
+                  </td>
+                  <td className="py-3 px-4 font-mono text-muted text-[11px]">
+                    {item.category}
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                      item.is_veg ? 'bg-sage-100 text-forest-800' : 'bg-terracotta-light text-terracotta-dark'
+                    }`}>
+                      {item.is_veg ? 'VEG' : 'NON-VEG'}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-muted text-xs">
+                    {item.description}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono font-bold text-forest-800">
+                    ₹{item.price.toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
-
-      {/* Manual Order Modal */}
-      <ManualOrderModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        tables={tables}
-        onOrderCreated={() => loadData()}
-      />
     </div>
   );
 };
