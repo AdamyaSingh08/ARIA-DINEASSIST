@@ -11,9 +11,12 @@ export default {
         forest: {
           950: '#0A1E19',
           900: '#102C25', // Dark green-black
+          850: '#13352C', // Deep forest shade
           800: '#163D32', // Deep forest green (primary brand)
           700: '#1E4E41',
           600: '#2A6857',
+          500: '#3D8370',
+          200: '#C2D6CC',
           100: '#E2EBE7',
           50: '#F0F5F2',
         },

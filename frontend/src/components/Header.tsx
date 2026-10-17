@@ -76,39 +76,39 @@ export const Header: React.FC<HeaderProps> = ({
   const renderConnectionPill = () => {
     if (mcpStatus === 'connected') {
       return (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-completed-light border border-completed/40 text-completed-dark font-mono text-xs font-bold shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-completed-dark beacon-pulse" />
+        <div className="h-11 flex items-center gap-2 px-3.5 rounded-xl bg-completed-light border border-completed/40 text-completed-dark font-mono text-xs font-bold shadow-xs">
+          <span className="w-2.5 h-2.5 rounded-full bg-completed-dark beacon-pulse shrink-0" />
           <span>XIAOZHI MCP: CONNECTED</span>
         </div>
       );
     }
     if (mcpStatus === 'connecting') {
       return (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-light border border-amber/40 text-amber-dark font-mono text-xs font-bold">
-          <RefreshCw className="w-3 h-3 animate-spin text-amber" />
+        <div className="h-11 flex items-center gap-2 px-3.5 rounded-xl bg-amber-light border border-amber/40 text-amber-dark font-mono text-xs font-bold shadow-xs">
+          <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber shrink-0" />
           <span>XIAOZHI: CONNECTING</span>
         </div>
       );
     }
     if (mcpStatus === 'disconnected') {
       return (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-terracotta-light border border-terracotta/40 text-terracotta-dark font-mono text-xs font-bold">
-          <span className="w-2 h-2 rounded-full bg-terracotta" />
+        <div className="h-11 flex items-center gap-2 px-3.5 rounded-xl bg-terracotta-light border border-terracotta/40 text-terracotta-dark font-mono text-xs font-bold shadow-xs">
+          <span className="w-2.5 h-2.5 rounded-full bg-terracotta shrink-0" />
           <span>XIAOZHI: DISCONNECTED</span>
         </div>
       );
     }
     // Default when no physical MCP URL is configured
     return (
-      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-warm border border-borderLine text-ink-secondary font-mono text-xs font-semibold">
-        <span className="w-2 h-2 rounded-full bg-lime-accent border border-forest-800" />
+      <div className="h-11 flex items-center gap-2 px-3.5 rounded-xl bg-surface-warm border border-borderLine text-ink-secondary font-mono text-xs font-semibold shadow-xs">
+        <span className="w-2.5 h-2.5 rounded-full bg-lime-accent border border-forest-800 shrink-0" />
         <span>{isDemoMode ? 'DEMO MODE' : 'NOT CONFIGURED'}</span>
       </div>
     );
   };
 
   return (
-    <header className="h-20 bg-white border-b border-borderLine px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-ticket">
+    <header className="h-20 bg-white border-b border-borderLine px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-ticket shrink-0">
       {/* Left: Mobile Menu & Screen Hierarchy */}
       <div className="flex items-center gap-3.5">
         {onToggleSidebar && (
@@ -134,10 +134,10 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right: Operational Status & Quick Actions */}
-      <div className="flex items-center gap-2.5 sm:gap-4">
+      <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Clock Context */}
-        <div className="hidden lg:flex items-center gap-2 text-xs font-mono text-ink-secondary bg-warmBg px-3 py-1.5 rounded-lg border border-borderLine">
-          <Clock className="w-3.5 h-3.5 text-forest-700" />
+        <div className="hidden lg:flex items-center gap-2 h-11 px-3.5 rounded-xl bg-warmBg border border-borderLine text-xs font-mono text-ink-secondary">
+          <Clock className="w-3.5 h-3.5 text-forest-700 shrink-0" />
           <span className="text-ink-primary font-bold">{currentTime}</span>
           <span className="text-borderLine">|</span>
           <span>{currentDate}</span>
@@ -155,27 +155,27 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Device Setup Button */}
         <button
           onClick={onOpenDeviceSetup}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-warm hover:bg-warmBg text-ink-primary border border-borderLine text-xs font-bold transition shadow-xs min-h-[44px]"
+          className="h-11 flex items-center gap-2 px-3.5 rounded-xl bg-surface-warm hover:bg-warmBg text-ink-primary border border-borderLine text-xs font-bold transition shadow-xs"
           title="Configure XiaoZhi Robot and MCP Integration"
         >
-          <Sliders className="w-4 h-4 text-forest-800" />
+          <Sliders className="w-4 h-4 text-forest-800 shrink-0" />
           <span className="hidden md:inline">Device Setup</span>
         </button>
 
         {/* Demo Simulator Drawer Button */}
         <button
           onClick={onOpenSimulator}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-lime-light hover:bg-lime-accent/40 text-forest-900 border border-lime-accent text-xs font-bold transition shadow-xs min-h-[44px]"
+          className="h-11 flex items-center gap-2 px-3.5 rounded-xl bg-lime-light hover:bg-lime-accent/50 text-forest-900 border border-lime-accent text-xs font-bold transition shadow-xs"
           title="Open table voice trigger simulator"
         >
-          <Sparkles className="w-4 h-4 text-forest-800" />
+          <Sparkles className="w-4 h-4 text-forest-800 shrink-0" />
           <span className="hidden sm:inline">Simulate Event</span>
         </button>
 
         {/* Chime Mute Button */}
         <button
           onClick={toggleSound}
-          className={`p-2.5 rounded-lg border transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
+          className={`h-11 w-11 rounded-xl border transition-colors flex items-center justify-center shrink-0 ${
             soundMuted
               ? 'bg-surface-warm text-ink-muted border-borderLine hover:text-ink-primary'
               : 'bg-forest-100 text-forest-800 border-forest-600/30 hover:bg-forest-100'

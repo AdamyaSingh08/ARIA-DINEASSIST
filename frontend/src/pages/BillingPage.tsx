@@ -155,11 +155,11 @@ export const BillingPage: React.FC<BillingPageProps> = ({ initialTableId }) => {
         </div>
 
         {/* Quick Bill Generator from Active Orders */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <select
             value={selectedTableForBill}
             onChange={(e) => setSelectedTableForBill(e.target.value)}
-            className="text-xs font-mono font-bold px-3 py-2 bg-surface-warm border border-borderLine rounded-xl text-ink-primary min-h-[44px] focus:outline-hidden focus:border-forest-800"
+            className="h-11 text-xs font-mono font-bold px-3 bg-surface-warm border border-borderLine rounded-xl text-ink-primary focus:outline-hidden focus:border-forest-800 shadow-xs"
           >
             <option value="">-- Generate Bill for Table --</option>
             {tables.map(t => (
@@ -172,7 +172,7 @@ export const BillingPage: React.FC<BillingPageProps> = ({ initialTableId }) => {
           <button
             disabled={!selectedTableForBill || generating}
             onClick={handleGenerateBill}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-forest-800 hover:bg-forest-900 text-white font-bold text-xs shadow-xs transition min-h-[44px] disabled:opacity-50"
+            className="h-11 flex items-center gap-1.5 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 text-white font-bold text-xs shadow-xs transition disabled:opacity-50 shrink-0"
           >
             <Plus className="w-4 h-4 text-lime-accent" />
             <span>{generating ? 'Calculating...' : 'Create Invoice'}</span>
@@ -185,22 +185,22 @@ export const BillingPage: React.FC<BillingPageProps> = ({ initialTableId }) => {
         {/* LEFT PANEL (5 cols): Table Bills Ledger */}
         <div className="lg:col-span-5 bg-white rounded-2xl border border-borderLine shadow-ticket overflow-hidden">
           {/* Filter Bar */}
-          <div className="p-3.5 border-b border-borderLine bg-surface-warm flex items-center gap-2">
+          <div className="p-3.5 border-b border-borderLine bg-surface-warm flex items-center gap-2.5">
             <div className="relative flex-1">
-              <Search className="w-3.5 h-3.5 text-ink-muted absolute left-3 top-3" />
+              <Search className="w-4 h-4 text-ink-muted absolute left-3 top-3 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search invoice or table..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full text-xs font-mono pl-8.5 pr-3 py-2 bg-white border border-borderLine rounded-xl text-ink-primary focus:outline-hidden focus:border-forest-800"
+                className="h-10 w-full text-xs font-mono pl-9 pr-3 bg-white border border-borderLine rounded-xl text-ink-primary focus:outline-hidden focus:border-forest-800 shadow-xs"
               />
             </div>
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs font-mono font-bold px-2.5 py-2 bg-white border border-borderLine rounded-xl text-ink-primary focus:outline-hidden"
+              className="h-10 text-xs font-mono font-bold px-3 bg-white border border-borderLine rounded-xl text-ink-primary focus:outline-hidden shadow-xs shrink-0"
             >
               <option value="all">All ({bills.length})</option>
               <option value="Open">Open ({openBills.length})</option>

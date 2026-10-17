@@ -102,13 +102,18 @@ export const KitchenPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 font-mono text-xs">
-          <div className="px-3 py-1.5 rounded-xl bg-surface-warm border border-borderLine">
-            <span className="text-ink-secondary mr-1.5">Active Tickets:</span>
-            <span className="font-bold text-forest-800">{newOrders.length + preparingOrders.length + readyOrders.length}</span>
+        <div className="flex items-center gap-2.5 font-mono text-xs">
+          <div className="h-10 px-3.5 rounded-xl bg-surface-warm border border-borderLine flex items-center gap-1.5 shadow-xs">
+            <span className="text-ink-secondary">Active Tickets:</span>
+            <span className="font-bold text-forest-800 px-1.5 py-0.5 rounded bg-forest-100 text-xs">
+              {newOrders.length + preparingOrders.length + readyOrders.length}
+            </span>
           </div>
-          <div className="px-3 py-1.5 rounded-xl bg-lime-light border border-lime-accent text-forest-900 font-bold">
-            <span>Ready for Waiter Pickup: {readyOrders.length}</span>
+          <div className="h-10 px-3.5 rounded-xl bg-lime-light border border-lime-accent text-forest-900 font-bold flex items-center gap-1.5 shadow-xs">
+            <span>Ready for Pickup:</span>
+            <span className="px-1.5 py-0.5 rounded bg-lime-accent text-forest-950 text-xs font-mono">
+              {readyOrders.length}
+            </span>
           </div>
         </div>
       </div>
@@ -117,14 +122,14 @@ export const KitchenPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* COLUMN 1: NEW ORDERS */}
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b-2 border-terracotta">
+          <div className="h-10 flex items-center justify-between pb-2 border-b-2 border-terracotta">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-terracotta beacon-pulse" />
               <h3 className="font-bold text-sm uppercase text-ink-primary font-sans tracking-wide">
                 1. New Orders
               </h3>
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-terracotta-light text-terracotta-dark font-mono text-xs font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-terracotta-light text-terracotta-dark font-mono text-xs font-bold">
               {newOrders.length}
             </span>
           </div>
@@ -201,14 +206,14 @@ export const KitchenPage: React.FC = () => {
 
         {/* COLUMN 2: PREPARING */}
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b-2 border-amber">
+          <div className="h-10 flex items-center justify-between pb-2 border-b-2 border-amber">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-amber" />
               <h3 className="font-bold text-sm uppercase text-ink-primary font-sans tracking-wide">
                 2. In Preparation
               </h3>
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-amber-light text-amber-dark font-mono text-xs font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-light text-amber-dark font-mono text-xs font-bold">
               {preparingOrders.length}
             </span>
           </div>
@@ -285,14 +290,14 @@ export const KitchenPage: React.FC = () => {
 
         {/* COLUMN 3: READY TO SERVE */}
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b-2 border-completed-dark">
+          <div className="h-10 flex items-center justify-between pb-2 border-b-2 border-completed-dark">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-completed-dark beacon-pulse" />
               <h3 className="font-bold text-sm uppercase text-ink-primary font-sans tracking-wide">
                 3. Ready to Serve
               </h3>
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-completed-light text-completed-dark font-mono text-xs font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-completed-light text-completed-dark font-mono text-xs font-bold">
               {readyOrders.length}
             </span>
           </div>
