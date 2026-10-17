@@ -1,35 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { SocketProvider, useSocket } from './context/SocketContext';
 import { Header } from './components/Header';
-import { Sidebar, NavTab } from './components/Sidebar';
-import { RobotVoiceSimulator } from './components/RobotVoiceSimulator';
+import { Sidebar, OperationalTab } from './components/Sidebar';
+import { ServicePage } from './pages/ServicePage';
+import { KitchenPage } from './pages/KitchenPage';
+import { BillingPage } from './pages/BillingPage';
+import { DeviceSetupModal } from './components/DeviceSetupModal';
+import { DemoSimulatorModal } from './components/DemoSimulatorModal';
 import { NotificationToasts } from './components/NotificationToast';
-import { ReceiptModal } from './components/ReceiptModal';
-
-// Pages
-import { OverviewPage } from './pages/OverviewPage';
-import { LiveRequestsPage } from './pages/LiveRequestsPage';
-import { FoodOrdersPage } from './pages/FoodOrdersPage';
-import { TablesRobotsPage } from './pages/TablesRobotsPage';
-import { BillingReceiptsPage } from './pages/BillingReceiptsPage';
-import { HistoryPage } from './pages/HistoryPage';
-import { SettingsIntegrationPage } from './pages/SettingsIntegrationPage';
 
 import { api } from './services/api';
 
 const MainApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<NavTab>('overview');
+  // Default landing view is SERVICE for waiters
+  const [activeTab, setActiveTab] = useState<OperationalTab>('service');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  const [showSimulator, setShowSimulator] = useState<boolean>(false);
-  const [currentTable, setCurrentTable] = useState<string>('T04');
-  const [activeBillModalId, setActiveBillModalId] = useState<string | null>(null);
+  const [isDeviceSetupOpen, setIsDeviceSetupOpen] = useState<boolean>(false);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState<boolean>(false);
+  const [selectedTableForBilling, setSelectedTableForBilling] = useState<string | null>(null);
 
-  // Badge Counts for Navigation
+  // Badge Counts for the 3 Primary Sections
   const [badgeCounts, setBadgeCounts] = useState({
     newRequests: 0,
-    pendingOrders: 0,
-    openBills: 0,
-    connectedRobots: 1
+    activeOrders: 0,
+    openBills: 0
   });
 
   const { socket } = useSocket();
@@ -37,23 +31,21 @@ const MainApp: React.FC = () => {
   const fetchBadgeCounts = async () => {
     try {
       const [reqs, orders, bills] = await Promise.all([
-        api.getRequests({ status: 'Pending' }),
-        api.getOrders(),
-        api.getBills({ status: 'Open' })
+        api.getRequests({ status: 'New' }).catch(() => []),
+        api.getOrders().catch(() => []),
+        api.getBills({ status: 'Open' }).catch(() => [])
       ]);
-      const pendingOrdersCount = orders.filter(
-        o => o.status === 'Received' || o.status === 'Confirmed'
+
+      const activeOrdersCount = orders.filter(
+        o => o.status === 'Received' || o.status === 'Confirmed' || o.status === 'Preparing'
       ).length;
 
       setBadgeCounts({
         newRequests: reqs.length,
-        pendingOrders: pendingOrdersCount,
-        openBills: bills.length,
-        connectedRobots: 1
+        activeOrders: activeOrdersCount,
+        openBills: bills.length
       });
-    } catch (err) {
-      // Non-critical background telemetry
-    }
+    } catch (_) {}
   };
 
   useEffect(() => {
@@ -83,128 +75,93 @@ const MainApp: React.FC = () => {
     }
   }, [socket]);
 
-  // Tab Title Metadata
-  const getPageInfo = (): { title: string; subtitle: string } => {
+  // Section Headers Meta
+  const getSectionInfo = (): { title: string; subtitle: string } => {
     switch (activeTab) {
-      case 'overview':
+      case 'service':
         return {
-          title: 'Dining Room Overview',
-          subtitle: 'Live restaurant shift operations and ARIA table monitoring'
+          title: 'Service Console',
+          subtitle: 'Live customer assistance and beverage requests from robot-connected tables'
         };
-      case 'requests':
+      case 'kitchen':
         return {
-          title: 'Guest Service Requests',
-          subtitle: 'Real-time staff assistance and beverage requests from tables'
-        };
-      case 'orders':
-        return {
-          title: 'Kitchen Food Orders',
-          subtitle: 'Live kitchen display system and dish preparation pipeline'
-        };
-      case 'tables':
-        return {
-          title: 'Tables & Robot Fleet',
-          subtitle: 'Dining room layout, table occupancy, and ARIA rover topology'
+          title: 'Kitchen Display (KDS)',
+          subtitle: 'Live food preparation queue and chef fulfillment workflow'
         };
       case 'billing':
         return {
-          title: 'Billing & Receipts',
-          subtitle: 'Invoices generated via ARIA table checkout and cashier settlement'
-        };
-      case 'history':
-        return {
-          title: 'Audit & Archives',
-          subtitle: 'Historical record of fulfilled calls, orders, and settled bills'
-        };
-      case 'settings':
-        return {
-          title: 'ARIA Hardware Gateway',
-          subtitle: 'ESP32-S3 rover telemetry parameters, API keys, and test harness'
+          title: 'Billing & POS Cashier',
+          subtitle: 'Review dining table invoices, preview receipts, and record settlement'
         };
       default:
         return { title: 'ARIA DineAssist', subtitle: '' };
     }
   };
 
-  const pageInfo = getPageInfo();
+  const sectionInfo = getSectionInfo();
 
   return (
-    <div className="min-h-screen bg-ivory text-charcoal flex font-sans antialiased selection:bg-sage-200 selection:text-forest-900">
+    <div className="min-h-screen bg-warmBg text-ink-primary flex font-sans antialiased selection:bg-lime-accent selection:text-forest-900">
       {/* Toast Alert Notifications */}
       <NotificationToasts />
 
-      {/* Primary Sidebar */}
+      {/* Primary Deep Green Operations Sidebar */}
       <Sidebar
         activeTab={activeTab}
         onSelectTab={(tab) => setActiveTab(tab)}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         badgeCounts={badgeCounts}
-        robotLocation={currentTable}
+        robotLocation="T04"
         isRobotOnline={true}
+        onOpenDeviceSetup={() => setIsDeviceSetupOpen(true)}
+        onOpenSimulator={() => setIsSimulatorOpen(true)}
       />
 
       {/* Main Workspace Frame */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Contextual Header */}
         <Header
-          pageTitle={pageInfo.title}
-          pageSubtitle={pageInfo.subtitle}
+          pageTitle={sectionInfo.title}
+          pageSubtitle={sectionInfo.subtitle}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          robotLocation={currentTable}
+          robotLocation="T04"
           isRobotOnline={true}
-          isSimulatorOpen={showSimulator}
-          onToggleSimulator={() => setShowSimulator(!showSimulator)}
+          onOpenDeviceSetup={() => setIsDeviceSetupOpen(true)}
+          onOpenSimulator={() => setIsSimulatorOpen(true)}
         />
 
-        {/* Scrollable Page Body */}
+        {/* Scrollable Operational Screen Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {/* Collapsible Customer Interaction Simulator */}
-          <RobotVoiceSimulator
-            isOpen={showSimulator}
-            onClose={() => setShowSimulator(false)}
-            currentTable={currentTable}
-            onTableChange={(tableId) => setCurrentTable(tableId)}
-            onEventDispatched={() => fetchBadgeCounts()}
-          />
-
-          {/* View Router */}
-          {activeTab === 'overview' && (
-            <OverviewPage
-              onNavigate={(tab) => setActiveTab(tab)}
-              onOpenReceipt={(billId) => setActiveBillModalId(billId)}
-              currentRobotTable={currentTable}
+          {activeTab === 'service' && (
+            <ServicePage
+              onNavigateToBilling={(tableId) => {
+                setSelectedTableForBilling(tableId || null);
+                setActiveTab('billing');
+              }}
             />
           )}
 
-          {activeTab === 'requests' && <LiveRequestsPage />}
-
-          {activeTab === 'orders' && <FoodOrdersPage />}
-
-          {activeTab === 'tables' && <TablesRobotsPage />}
+          {activeTab === 'kitchen' && <KitchenPage />}
 
           {activeTab === 'billing' && (
-            <BillingReceiptsPage
-              onOpenReceipt={(billId) => setActiveBillModalId(billId)}
-            />
+            <BillingPage initialTableId={selectedTableForBilling} />
           )}
-
-          {activeTab === 'history' && (
-            <HistoryPage
-              onOpenReceipt={(billId) => setActiveBillModalId(billId)}
-            />
-          )}
-
-          {activeTab === 'settings' && <SettingsIntegrationPage />}
         </main>
       </div>
 
-      {/* Receipt & Payment Settlement Modal */}
-      <ReceiptModal
-        billId={activeBillModalId}
-        onClose={() => setActiveBillModalId(null)}
-        restaurantName="ARIA Dining Room"
-        onBillUpdated={() => fetchBadgeCounts()}
+      {/* XiaoZhi MCP Device Setup Modal */}
+      <DeviceSetupModal
+        isOpen={isDeviceSetupOpen}
+        onClose={() => setIsDeviceSetupOpen(false)}
+        onConfigSaved={() => fetchBadgeCounts()}
+      />
+
+      {/* Demo Interaction Simulator Modal */}
+      <DemoSimulatorModal
+        isOpen={isSimulatorOpen}
+        onClose={() => setIsSimulatorOpen(false)}
+        onEventDispatched={() => fetchBadgeCounts()}
       />
     </div>
   );

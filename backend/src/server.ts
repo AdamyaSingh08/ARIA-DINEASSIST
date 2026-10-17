@@ -18,6 +18,7 @@ import billsRouter from './routes/bills';
 import historyRouter from './routes/history';
 import integrationsRouter from './routes/integrations';
 import settingsRouter from './routes/settings';
+import mcpRouter from './routes/mcp';
 
 dotenv.config();
 
@@ -53,6 +54,8 @@ app.use('/api/robots', robotsRouter);
 app.use('/api/bills', billsRouter);
 app.use('/api/history', historyRouter);
 app.use('/api/integrations/robot', integrationsRouter);
+app.use('/api/integrations/xiaozhi', mcpRouter);
+app.use('/api/mcp', mcpRouter);
 app.use('/api/settings', settingsRouter);
 
 // Root health & meta

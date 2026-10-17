@@ -7,32 +7,48 @@ export default {
   theme: {
     extend: {
       colors: {
-        ivory: '#F6F5EF',
+        // ARIA DineAssist Brand Palette
         forest: {
-          950: '#0B1C17',
-          900: '#112C24',
-          800: '#183D32', // Deep forest green (primary brand)
-          700: '#235244',
-          600: '#316B5A',
-          50: '#EDF4F1',
+          950: '#0A1E19',
+          900: '#102C25', // Dark green-black
+          800: '#163D32', // Deep forest green (primary brand)
+          700: '#1E4E41',
+          600: '#2A6857',
+          100: '#E2EBE7',
+          50: '#F0F5F2',
         },
-        sage: {
-          50: '#F7FBF5',
-          100: '#EEF5E9',
-          200: '#DCE7D5', // Muted sage
-          300: '#C3D6B9',
-          400: '#9FB992',
-          600: '#5F7C53',
+        lime: {
+          accent: '#D7F36B', // Fresh lime accent
+          hover: '#C8E856',
+          light: '#F2FCD1',
         },
-        citrus: '#D7E68A', // Restrained citrus accent
+        warmBg: '#F1F2E9', // Warm light background
+        surface: {
+          DEFAULT: '#FFFFFF',
+          warm: '#F8F8F2', // Warm neutral surface
+          subtle: '#EAEBE1',
+        },
         terracotta: {
-          DEFAULT: '#C87553', // Terracotta for selected warnings/attention
-          light: '#F8EBE6',
-          dark: '#A65A3A',
+          DEFAULT: '#DE7658', // Urgent attention / alerts
+          light: '#FBEEEA',
+          dark: '#B85235',
         },
-        charcoal: '#202923', // Deep charcoal text
-        muted: '#747B73', // Muted secondary text
-        borderLine: '#E4E5DC', // Fine borders
+        amber: {
+          DEFAULT: '#F2BB50', // Active preparation / waiting
+          light: '#FDF6E7',
+          dark: '#C89327',
+        },
+        completed: {
+          DEFAULT: '#B9E4B5', // Completed actions / ready
+          dark: '#2E7A27',
+          light: '#EEFAED',
+        },
+        ink: {
+          primary: '#1D2923', // Primary text
+          secondary: '#69746B', // Secondary text
+          muted: '#8A958C',
+        },
+        borderLine: '#E2E4D8', // Fine operational borders
       },
       fontFamily: {
         sans: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
@@ -46,10 +62,12 @@ export default {
         'md': '10px',
         'lg': '12px',
         'xl': '16px',
+        '2xl': '20px',
       },
       boxShadow: {
-        'subtle': '0 1px 3px rgba(32, 41, 35, 0.04), 0 1px 2px rgba(32, 41, 35, 0.02)',
-        'elevated': '0 4px 12px rgba(32, 41, 35, 0.06)',
+        'ticket': '0 2px 8px rgba(16, 44, 37, 0.06), 0 1px 3px rgba(16, 44, 37, 0.04)',
+        'ticket-hover': '0 6px 16px rgba(16, 44, 37, 0.09), 0 2px 6px rgba(16, 44, 37, 0.06)',
+        'modal': '0 12px 36px rgba(16, 44, 37, 0.16)',
       }
     },
   },

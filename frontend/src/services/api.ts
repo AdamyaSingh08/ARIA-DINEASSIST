@@ -104,4 +104,18 @@ export const api = {
     request<{ success: boolean; message: string }>('/settings/reset-database', { method: 'POST' }),
   simulateDemo: (scenario: string, extra?: any) =>
     request<any>('/settings/demo/simulate', { method: 'POST', body: JSON.stringify({ scenario, ...extra }) }),
+
+  // XiaoZhi MCP Integration
+  getXiaozhiStatus: () =>
+    request<{
+      status: string;
+      diagnostics: { status: string; message: string; transportUsed?: string; latencyMs?: number; lastChecked: string };
+      config: { enabled: boolean; endpointUrl: string; transport: string; robotId: string; hasToken: boolean };
+    }>('/integrations/xiaozhi/status'),
+  saveXiaozhiConfig: (data: { endpointUrl: string; transport: string; token?: string; robotId: string; enabled?: boolean }) =>
+    request<{ success: boolean; message: string }>('/integrations/xiaozhi/configure', { method: 'POST', body: JSON.stringify(data) }),
+  testXiaozhiConnection: (data: { endpointUrl: string; transport?: string; token?: string; robotId?: string }) =>
+    request<{ success: boolean; diagnostics: { status: string; message: string; transportUsed?: string; latencyMs?: number; lastChecked: string } }>('/integrations/xiaozhi/test', { method: 'POST', body: JSON.stringify(data) }),
+  getMcpTools: () =>
+    request<{ success: boolean; tools: any[] }>('/mcp/tools'),
 };

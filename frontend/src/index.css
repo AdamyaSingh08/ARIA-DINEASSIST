@@ -3,46 +3,48 @@
 @tailwind utilities;
 
 body {
-  background-color: #F6F5EF;
-  color: #202923;
+  background-color: #F1F2E9;
+  color: #1D2923;
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background-color: #DCE7D5;
-  color: #183D32;
+  background-color: #D7F36B;
+  color: #102C25;
 }
 
 /* Operational clean scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F0EFE8;
+  background: #EAEBE1;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D5D6CC;
+  background: #CCD0C2;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #B5B6AA;
+  background: #B0B5A4;
 }
 
-/* Purposeful, subtle indicator pulses */
-@keyframes subtle-attention {
+/* Attention pulse */
+@keyframes attention-beacon {
   0%, 100% {
+    transform: scale(1);
     opacity: 1;
   }
   50% {
-    opacity: 0.4;
+    transform: scale(1.08);
+    opacity: 0.85;
   }
 }
 
-.indicator-pulse {
-  animation: subtle-attention 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.beacon-pulse {
+  animation: attention-beacon 2.4s ease-in-out infinite;
 }
 
 /* Thermal receipt print layout */
@@ -61,7 +63,7 @@ body {
     margin: 0;
     padding: 24px;
     background: #FFFFFF !important;
-    color: #111111 !important;
+    color: #000000 !important;
     box-shadow: none !important;
     border: none !important;
   }
